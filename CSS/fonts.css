@@ -1,0 +1,45 @@
+@charset "utf-8";
+/* CSS Document */
+
+@font-face {font-family: Elysium; src: url("../Fonts/Austrise.ttf");}
+	
+body {
+  font-family: Arial, sans-serif; 
+  color: whitesmoke;
+  background-color: #010101;
+}
+
+
+body {
+  font-family: Arial, sans-serif;
+  color: whitesmoke;
+  margin: 0;
+  padding: 1rem;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: #010101;
+}
+	
+/* Headings */
+h2 {
+  font-family: "Elysium";
+  text-align: center;
+  font-size: clamp(32px, 6vw, 60px);
+  margin: 0 0 1rem 0;
+}
+
+/* Icons */
+.icon {
+  font-size: clamp(16px, 2vw, 20px);
+}
+
+
+
+
+
+
+
+
+
+
