@@ -1,0 +1,1 @@
+https://www.numuki.com/search.php?keywords=${encodeURIComponent(query)}

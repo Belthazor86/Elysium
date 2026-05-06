@@ -1,0 +1,1 @@
+https://www.justwatch.com/us/search?q=${encodeURIComponent(query)}

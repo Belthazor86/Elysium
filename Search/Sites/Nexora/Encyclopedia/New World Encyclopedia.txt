@@ -1,0 +1,1 @@
+https://www.newworldencyclopedia.org/entry/Special:Search?search=${encodeURIComponent(query)}

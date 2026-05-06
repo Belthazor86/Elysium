@@ -1,0 +1,1 @@
+https://www.retrogames.cc/search?q=${encodeURIComponent(query)} 

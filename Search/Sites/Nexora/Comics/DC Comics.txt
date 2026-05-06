@@ -1,0 +1,1 @@
+https://www.dccomics.com/search?q=${encodeURIComponent(query)}

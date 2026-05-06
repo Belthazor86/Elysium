@@ -1,0 +1,1 @@
+https://www.marvel.com/search?&query=${encodeURIComponent(query)}

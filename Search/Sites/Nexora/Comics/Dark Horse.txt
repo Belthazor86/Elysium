@@ -1,0 +1,1 @@
+https://www.darkhorse.com/Search/${encodeURIComponent(query)}

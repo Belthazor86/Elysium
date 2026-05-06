@@ -1,0 +1,1 @@
+https://www.cdkeys.com/catalogsearch/result/?q=${encodeURIComponent(query)}

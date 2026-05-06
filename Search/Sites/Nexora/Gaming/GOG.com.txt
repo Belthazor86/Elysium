@@ -1,0 +1,1 @@
+https://www.gog.com/en/games?query=${encodeURIComponent(query)}&order=desc:score}
