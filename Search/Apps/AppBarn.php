@@ -114,11 +114,21 @@ input#searchInput:focus {
 .buttons {
   margin-top: 15px;
   margin-bottom: 30px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid; /* Changed from flex to grid */
+  grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
   gap: 12px;
+  width: 100%;
+  max-width: 100px; /* Optional: keeps the grid from getting too wide */
   justify-content: center;
 }
+
+/* Optional: Make it responsive so it drops to 2 columns on small screens */
+@media (max-width: 600px) {
+  .buttons {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
 .buttons button {
   background: #111;
   border: 2px solid #00aaff;
@@ -215,6 +225,8 @@ async function searchArchives() {
     });
 }
 </script>
+
+
 
 
 </body>

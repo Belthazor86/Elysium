@@ -1,26 +1,30 @@
 <?php
-// AJAX: Search and return only PHP files from matching filenames (directly in Gallerium folder)
 if (isset($_GET['search']) && isset($_GET['category'])) {
     $query = strtolower(str_replace([' ', '_', '-'], '', trim($_GET['search'])));
-    $category = basename($_GET['category']);
-    $baseDir = __DIR__ . "/$category";
+    
+    // We expect 'category' to be just the folder name, e.g., "Science"
+    $categoryName = basename($_GET['category']); 
+    $baseDir = __DIR__ . "/Scribe/" . $categoryName; 
     $results = [];
 
     if (is_dir($baseDir)) {
-        // Get all PHP files directly in this folder
-        $scripts = glob("$baseDir/*.txt");
+        // Find all .txt files. CHANGE '.txt' TO '.php' IF YOUR FILES ARE PHP
+        $files = glob("$baseDir/*.txt");
 
-        foreach ($scripts as $script) {
-            $filename = strtolower(str_replace([' ', '_', '-'], '', pathinfo($script, PATHINFO_FILENAME)));
+        foreach ($files as $file) {
+            $filenameOnly = pathinfo($file, PATHINFO_FILENAME);
+            $cleanName = strtolower(str_replace([' ', '_', '-'], '', $filenameOnly));
 
-            // Match search query (if query is empty, it returns all)
-            if ($query === '' || strpos($filename, $query) !== false) {
+            if ($query === '' || strpos($cleanName, $query) !== false) {
                 $results[] = [
-                    'title' => pathinfo($script, PATHINFO_FILENAME), // Name without extension
-                    'script' => "$category/" . basename($script),    // Path for iframe
+                    'title' => $filenameOnly,
+                    'script' => "Scribe/" . $categoryName . "/" . basename($file)
                 ];
             }
         }
+    } else {
+        // This helps us debug if the path is wrong
+        $results = ["debug_error" => "Directory not found: $baseDir"];
     }
 
     header('Content-Type: application/json');
@@ -156,24 +160,39 @@ input#searchInput:focus {
   text-align: center;         /* Center text inside pre */
 }
 
-/* Added a simple style for the preview button to keep layout consistent */
-.preview-btn {
+.buttons {
+  margin-top: 15px;
+  margin-bottom: 30px;
+  display: grid; /* Changed from flex to grid */
+  grid-template-columns: repeat(3, 1fr); /* 4 equal columns */
+  gap: 12px;
+  width: 100%;
+  max-width: 100px; /* Optional: keeps the grid from getting too wide */
+  justify-content: center;
+}
+
+/* Optional: Make it responsive so it drops to 2 columns on small screens */
+@media (max-width: 600px) {
+  .buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.buttons button {
   background: #111;
   border: 2px solid #00aaff;
   color: #00aaff;
   padding: 10px 18px;
   font-weight: 600;
   border-radius: 20px;
-  margin-top: 20px;
-  margin-bottom: 30px;
   cursor: pointer;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
-.preview-btn:hover {
+.buttons button:hover {
   background-color: #00aaff;
   color: #000;
 }
-.preview-btn.active {
+.buttons button.active {
   background-color: #00aaff;
   color: #000;
   box-shadow: 0 0 15px #00aaffbb;
@@ -185,7 +204,20 @@ input#searchInput:focus {
 <h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
 
 <input type="text" id="searchInput" placeholder="Search..." autocomplete="off" />
-<button class="preview-btn" onclick="showAll()">Preview All</button>
+<div class="buttons">
+  <?php
+  $vetraPath = __DIR__ . '/Scribe';
+  if (is_dir($vetraPath)) {
+      $folders = array_filter(scandir($vetraPath), function($item) use ($vetraPath) {
+          return is_dir($vetraPath . '/' . $item) && !in_array($item, ['.', '..']);
+      });
+      foreach ($folders as $folder) {
+          // We pass the folder name to the JS function
+          echo '<button onclick="setCategory(\'' . htmlspecialchars($folder) . '\', event)">' . htmlspecialchars($folder) . '</button>';
+      }
+  }
+  ?>
+</div>
 
 <div id="gallery"></div>
 
@@ -211,92 +243,106 @@ input#searchInput:focus {
 </footer>
 
 <script>
-let currentCategory = 'Scribe';
+let currentCategory = ''; 
 let currentSearch = '';
 
-document.getElementById('searchInput').addEventListener('input', e => {
-  currentSearch = e.target.value.trim();
-  if (currentSearch.length >= 2) {
+// 1. Function to handle button clicks
+function setCategory(folderName, event) {
+    currentCategory = folderName; // Just "Science", not "Guides/Science"
+    
+    // UI Cleanup
+    document.getElementById('searchInput').value = '';
+    currentSearch = '';
+    document.querySelectorAll('.buttons button').forEach(btn => btn.classList.remove('active'));
+    if (event) event.target.classList.add('active');
+
+    // Fetch the files
     searchScripts();
-  } else {
-    document.getElementById('gallery').innerHTML = '';
-  }
+}
+
+// 2. Function to handle search input
+document.getElementById('searchInput').addEventListener('input', e => {
+    currentSearch = e.target.value.trim();
+    // Search if 2+ chars OR if box is empty (to show all again)
+    if (currentSearch.length >= 2 || currentSearch.length === 0) {
+        searchScripts();
+    }
 });
 
-// New function to show all files
-function showAll() {
-    currentSearch = '';
-    searchScripts();
-}
-
+// 3. The Core Fetcher
 async function searchScripts() {
-  try {
-    const res = await fetch(`?search=${encodeURIComponent(currentSearch)}&category=${currentCategory}`);
-    const data = await res.json();
+    if (!currentCategory) return;
 
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = '';
+    try {
+        const url = `?search=${encodeURIComponent(currentSearch)}&category=${encodeURIComponent(currentCategory)}`;
+        const res = await fetch(url);
+        const data = await res.json();
 
-    if (data.length === 0) {
-      gallery.textContent = 'No matches found.';
-      return;
+        // Debugging: If the PHP sent an error, show it in the console
+        if (data.debug_error) {
+            console.error("PHP Error:", data.debug_error);
+            return;
+        }
+
+        const gallery = document.getElementById('gallery');
+        gallery.innerHTML = '';
+
+        if (data.length === 0) {
+            gallery.textContent = 'No files found in this category.';
+            return;
+        }
+
+        data.forEach(item => {
+            const link = document.createElement('div');
+            link.className = 'file-link';
+            link.textContent = item.title;
+            link.onclick = () => openOverlay(item.script);
+            gallery.appendChild(link);
+        });
+    } catch (err) {
+        console.error('Fetch error:', err);
     }
-
-    data.forEach(item => {
-      const link = document.createElement('div');
-      link.className = 'file-link';
-      link.textContent = item.title;
-      link.onclick = () => openOverlay(item.script);
-      gallery.appendChild(link);
-    });
-  } catch (err) {
-    console.error('Search error:', err);
-  }
 }
 
-function openOverlay(scriptPath) {
-  const overlay = document.getElementById('overlay');
-  const contentDiv = document.getElementById('bookContent');
+// 4. Overlay Logic
+function openOverlay(path) {
+    const overlay = document.getElementById('overlay');
+    const contentDiv = document.getElementById('bookContent');
+    contentDiv.innerHTML = 'Loading...';
+    overlay.style.display = 'flex';
 
-  contentDiv.innerHTML = '';
-
-  fetch(scriptPath)
-    .then(res => res.text())
-    .then(text => {
-      const pre = document.createElement('pre');
-      pre.textContent = text; 
-      contentDiv.appendChild(pre);
-    })
-    .catch(err => {
-      contentDiv.textContent = 'Error loading book.';
-      console.error('Load book error:', err);
-    });
-
-  overlay.style.display = 'flex';
+    fetch(path)
+        .then(res => res.text())
+        .then(text => {
+            contentDiv.innerHTML = '';
+            const pre = document.createElement('pre');
+            pre.textContent = text; 
+            contentDiv.appendChild(pre);
+        })
+        .catch(err => {
+            contentDiv.textContent = 'Error loading file.';
+        });
 }
 
 function closeOverlay() {
-  const overlay = document.getElementById('overlay');
-  const contentDiv = document.getElementById('bookContent');
-  contentDiv.innerHTML = '';
-  overlay.style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('bookContent').innerHTML = '';
 }
 
 function toggleFullscreen() {
-  const container = document.getElementById('overlayContainer');
-  
-  if (!document.fullscreenElement) {
-    container.requestFullscreen().catch(err => {
-      alert(`Error enabling fullscreen: ${err.message}`);
-    });
-  } else {
-    document.exitFullscreen();
-  }
+    const container = document.getElementById('overlayContainer');
+    if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(err => alert(err.message));
+    } else {
+        document.exitFullscreen();
+    }
 }
 
+// Close on background click
 document.getElementById('overlay').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeOverlay();
+    if (e.target.id === 'overlay') closeOverlay();
 });
+
 </script>
 
 </body>

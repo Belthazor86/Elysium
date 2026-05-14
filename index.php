@@ -35,8 +35,8 @@ if (isset($_GET['ajax_folder'])) {
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="icon" href="Images/4.png" type="image/png">
-<link rel="apple-touch-icon" href="Images/5.png">
+<link rel="icon" href="Logos/1.png" type="image/png">
+<link rel="apple-touch-icon" href="Logos/2.png">
 <link href="CSS/w3.css" rel="stylesheet" type="text/css" />	
 <link href="CSS/fonts.css" rel="stylesheet" type="text/css" />	
 <link href="CSS/theme.css" rel="stylesheet" type="text/css" />	
@@ -167,7 +167,7 @@ ul { list-style-type: none; padding: 0; }
 <div id="message-box" class="demo w3-opacity w3-hover-opacity-off">Loading message...</div>
 <div class="logo">
 <?php
-$folder = "Images/";
+$folder = "Logos/";
 $images = scandir($folder);
 
 foreach ($images as $img) {
@@ -183,7 +183,7 @@ foreach ($images as $img) {
 
 
 <div id="main">
-    <iframe id="contentFrame" src="Media/Search.php" frameborder="0" scrolling="auto" style="width:100%; height:100vh;"></iframe>
+    <iframe id="contentFrame" src="Images/Search.php" frameborder="0" scrolling="auto" style="width:100%; height:100vh;"></iframe>
 </div>
 
 
@@ -214,7 +214,7 @@ foreach ($images as $img) {
         <button class="closebtn w3-opacity w3-hover-opacity-off" onclick="openNav()">🗏</button>           
         <button class="closebtn w3-opacity w3-hover-opacity-off" onclick="toggleFullscreen()">⛶ </button>    
         <button class="closebtn w3-opacity w3-hover-opacity-off" onclick="toggleRightNav()">❔</button> 
-        <button class="closebtn w3-opacity w3-hover-opacity-off" onclick="navigateToIframe('Media/Search.php')">⚙</button> 
+        <button class="closebtn w3-opacity w3-hover-opacity-off" onclick="navigateToIframe('Images/Search.php')">⚙</button> 
     </div>
 </div>
 
@@ -253,15 +253,17 @@ function showNextMessage() {
   document.getElementById('message-box').textContent = message;
 }
 
-// After loading messages:
-fetch('Messages/index.php')
-  .then(res => res.json())
+// Updated for .txt file
+fetch('Messages/index.txt')
+  .then(res => res.text()) // Fetch as plain text
   .then(data => {
-    messages = data;
+    // Split by new line and filter out empty lines
+    messages = data.split(/\r?\n/).filter(line => line.trim() !== "");
+    
     remainingMessages = [...messages];
     shuffle(remainingMessages);
     showNextMessage();
-    setInterval(showNextMessage, 5000); // every 5 seconds
+    setInterval(showNextMessage, 5000);
   })
   .catch(() => {
     document.getElementById('message-box').textContent = 'Failed to load messages.';

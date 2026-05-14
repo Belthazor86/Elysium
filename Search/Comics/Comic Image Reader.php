@@ -48,73 +48,32 @@ body {
   overflow: hidden; /* Disable scrolling when zoomed out */
 }
 
-
-
-														
-  /* Navigation */
- .video-slider-btn {
+button {
+    background: linear-gradient(135deg, #0d47a1, #1976d2); 
+    color: whitesmoke;
     border: none;
-    display: inline-block;
-    color: #fff;
-    font-size: 50px;
-    padding: 10px;
-    vertical-align: middle;
-    overflow: hidden;
-    text-decoration: none;
-    background-color: transparent;
-    text-align: center;
+    padding: 16px 32px;
     cursor: pointer;
-    white-space: nowrap;
-    z-index: 99999;
-    opacity: .7;
-    transition: all 350ms ease-in-out;
-  }
-	
- .video-slider-btn:hover {
-    opacity: 1;
-    transition: all 350ms ease-in-out;
-  }
-	
- .video-slider-btn.left-side {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    transform: translate(0%,-50%);
-    -ms-transform: translate(-0%,-50%);
-  }
-	
- .video-slider-btn.right-side {
-    position: absolute;
-    top: 50%;
-    right: 0%;
-    transform: translate(0%,-50%);
-    -ms-transform: translate(0%,-50%);
+    border-radius: 12px;
+    margin: 10px;
+    font-size: 1.2em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    text-transform: capitalize;
 }
-		
-/* Button Styles */
-.button {
-  background-color: transparent;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 20px;
-  padding: 10px 20px;
+button:hover {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    transform: scale(1.12);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
 }
-	
-
-										
+									
 </style>
 
 	
 <body>
 	
 	
-<button class="demo w3-opacity w3-hover-opacity-off button" id="import">Load</button>
-<img id="image" alt="Image" width="35%" class="zoomable">
-<input id="file-input" type="file" multiple style="display: none">
-<button class="video-slider-btn left-side" id="prev">❮</button>
-<button class="video-slider-btn right-side" id="next">❯</button>
-
 <?php
 $folder = "Comic Image Reader/";
 $images = [];
@@ -129,6 +88,22 @@ if (is_dir($folder)) {
 }
 ?>
 
+
+
+
+<h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
+
+
+<!-- CENTER CONTAINER -->
+<div style="width:100%; display:flex; justify-content:center; margin-top:20px;">
+<button class="demo w3-opacity w3-hover-opacity-off button" id="import">Load</button>
+<input id="file-input" type="file" multiple style="display: none">
+</div>
+
+
+<img id="image" alt="Image" width="35%" class="zoomable">
+<button class="video-slider-btn left-side" id="prev">❮</button>
+<button class="video-slider-btn right-side" id="next">❯</button>
 
 
 <!-- Footer -->

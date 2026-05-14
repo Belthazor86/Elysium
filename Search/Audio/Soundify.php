@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html>
 <head>
@@ -43,7 +44,7 @@ button {
   border: none;
   color: #ffffff;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   margin-right: 15px; 
 }
 
@@ -51,24 +52,112 @@ button {
 button:last-of-type {
   margin-right: 0;
 }
+
+.buttons {
+  margin-top: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.buttons button {
+  background: #111;
+  border: 2px solid #00aaff;
+  color: #00aaff;
+  padding: 10px 18px;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.buttons button:hover {
+  background-color: #00aaff;
+  color: #000;
+}
+.buttons button.active {
+  background-color: #00aaff;
+  color: #000;
+  box-shadow: 0 0 15px #00aaffbb;
+}
+
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(18, 18, 18, 0.95);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+#overlay .container {
+  position: relative;
+  width: 75vw;
+  max-width: 1200px;
+  height: 75vh;
+  background: #000;
+  border-radius: 15px;
+  box-shadow: 0 0 40px #00ffc3;
+  overflow: hidden;
+}
+#overlay button.closeBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  border: none;
+  padding: 6px 10px;
+  font-size: 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  color: #fff;
+  transition: background 0.2s;
+  z-index: 2;
+}
+#overlay button.closeBtn:hover {
+  background: #ff1a1a;
+}
+#overlay iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #111;
+}
+
 </style>
 
 <body>
 
 
-<button class="demo w3-opacity w3-hover-opacity-off button"onclick="document.getElementById('folderInput').click()">Load</button>
-<div id="setup" style="position:fixed; z-index:99; top:20px; left:20px;">
-    <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none;">
-</div>
-
-<div id="albumArt">
-    <img id="artDisplay" onclick="togglePlayPause()">
-</div>
-
+<h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
 <audio id="audioPlayer" onended="playNextAudio()" hidden></audio>
 
+
+<div class="buttons">
+  <?php
+  $vetraPath = __DIR__ . '/Soundify';
+  if (is_dir($vetraPath)) {
+      $folders = array_filter(scandir($vetraPath), function($item) use ($vetraPath) {
+          return is_dir($vetraPath . '/' . $item) && !in_array($item, ['.', '..']);
+      });
+      foreach ($folders as $folder) {
+          // We go back to passing just the folder name
+          echo '<button onclick="setCategory(\'' . htmlspecialchars($folder) . '\')">' . htmlspecialchars($folder) . '</button>';
+      }
+  }
+  ?>
+</div>
+
+
+<div id="overlay">
+<div id="albumArt"><img id="artDisplay" onclick="togglePlayPause()"></div>
 <button class="video-slider-btn left-side" onclick="playPreviousAudio()">❮</button>
 <button class="video-slider-btn right-side" onclick="playNextAudio()">❯</button>
+<button class="closeBtn" onclick="closePlayer()">❌</button>
+</div>
 
 
 <!-- Footer -->
@@ -83,60 +172,70 @@ button:last-of-type {
   </div>
 </footer>
 
+
+
 <script>
     let combinedPlaylist = [];
     let currentAudioIndex = 0;
     const audioPlayer = document.getElementById('audioPlayer');
     const artDisplay = document.getElementById('artDisplay');
-    const folderInput = document.getElementById('folderInput');
+    const overlay = document.getElementById('overlay');
 
-    folderInput.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files);
-        const audioMap = {};
-        const imageMap = {};
+    function setCategory(folderName) {
+        overlay.style.display = 'flex';
+        combinedPlaylist = []; // Clear old list
 
-        files.forEach(file => {
-            const name = file.name.split('.').slice(0, -1).join('.');
-            const ext = file.name.split('.').pop().toLowerCase();
-            const url = URL.createObjectURL(file);
-
-            if (['mp3', 'wav', 'ogg'].includes(ext)) audioMap[name] = url;
-            if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) imageMap[name] = url;
-        });
-
-        combinedPlaylist = Object.keys(audioMap).map(name => ({
-            song: audioMap[name],
-            image: imageMap[name] || '' 
-        }));
-
-        if (combinedPlaylist.length > 0) {
-            document.getElementById('setup').style.display = 'none';
-            playCurrentAudio();
+        // This creates a list for files 1, 2, 3, and 4
+        for (let i = 1; i <= 4; i++) {
+            combinedPlaylist.push({
+                song: `Soundify/${folderName}/Audio/${i}.mp3`,
+                image: `Soundify/${folderName}/Pictures/${i}.jpg`
+            });
         }
-    });
 
-    function playCurrentAudio() {
-        if (combinedPlaylist.length > 0) {
-            audioPlayer.src = combinedPlaylist[currentAudioIndex].song;
-            artDisplay.src = combinedPlaylist[currentAudioIndex].image;
-            audioPlayer.play();
-        }
-    }
-
-    function playPreviousAudio() {
-        currentAudioIndex = (currentAudioIndex > 0) ? currentAudioIndex - 1 : combinedPlaylist.length - 1;
+        currentAudioIndex = 0;
         playCurrentAudio();
     }
 
+    function playCurrentAudio() {
+        if (combinedPlaylist.length > 0) {
+            const item = combinedPlaylist[currentAudioIndex];
+            audioPlayer.src = item.song;
+            artDisplay.src = item.image;
+            
+            audioPlayer.load();
+            audioPlayer.play().catch(() => {}); 
+        }
+    }
+
     function playNextAudio() {
-        currentAudioIndex = (currentAudioIndex < combinedPlaylist.length - 1) ? currentAudioIndex + 1 : 0;
+        currentAudioIndex++;
+        if (currentAudioIndex >= combinedPlaylist.length) {
+            currentAudioIndex = 0; // Loop back to the first song
+        }
+        playCurrentAudio();
+    }
+
+    function playPreviousAudio() {
+        currentAudioIndex--;
+        if (currentAudioIndex < 0) {
+            currentAudioIndex = combinedPlaylist.length - 1; // Go to last song
+        }
         playCurrentAudio();
     }
 
     function togglePlayPause() {
         audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
     }
+    
+    function closePlayer() {
+        overlay.style.display = 'none';
+        audioPlayer.pause();
+        audioPlayer.src = ""; 
+    }
 </script>
+
+
                 
 </body>
 </html>

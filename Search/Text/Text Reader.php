@@ -100,21 +100,40 @@ body {
   text-align: center;         
 }
 
- .button {
-  background-color: transparent;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 20px;
-  padding: 10px 20px;
+button {
+    background: linear-gradient(135deg, #0d47a1, #1976d2); 
+    color: whitesmoke;
+    border: none;
+    padding: 16px 32px;
+    cursor: pointer;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    text-transform: capitalize;
+}
+button:hover {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    transform: scale(1.12);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
 }
 	
 </style>
 </head>
 <body>
 
+
+
+<h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
+
+
+<div style="width:100%; display:flex; justify-content:center; margin-top:20px;">
+    <!-- LOAD BUTTON -->
 <button id="loadFolderBtn" class="demo w3-opacity w3-hover-opacity-off button">Load</button>
 <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none" />
+</div>
+
 
 <ul id="playlist"></ul>
 
