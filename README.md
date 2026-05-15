@@ -26,11 +26,12 @@ The platform is organized into the following directory structure:
 
 Follow these steps to get your local instance running:
 
-1. Download the Elysium Project files.
-2. Setup a local server: Install XAMPP, WAMP, or Laragon.
-3. Deploy: Extract the project and place the folder into your server's htdocs (or equivalent) directory
-4. Rename (Optional): You can change the "Elysium" folder name to anything you prefer.
-5. Launch: Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
+1. **Download:** Download the Elysium Project files.
+2. **Setup a local server:** Install XAMPP, WAMP, or Laragon.
+3. **Deploy:** Extract the project and place the folder into your server's htdocs (or equivalent) directory
+4. **Rename (Optional):** Rename the "Elysium" folder name to anything you prefer.
+5. **Change (Optional):** Change the "Elysium" logo to your own. 
+6. **Launch:** Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
 
 **Included Web Apps**
 
@@ -40,7 +41,7 @@ Elysium comes pre-loaded with a variety of apps. You can add more by placing the
 + **Books & Comics:** Book Café, Gutendex, Pantheon, Comic Image Reader, Graphique.
 + **Media:** Soundify, Wavora, Moodify, Aurora, Ultra TV, Video Player.
 + **Productivity:** NotePad, Audiofy, Text Reader, Multi Notepad.
-+ **Xtras:** Includes Guides (functionality walkthroughs), Valhalla, and Yggdrasil.
++ **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
 
 **Included Automated Scripts**
 
@@ -59,6 +60,12 @@ Elysium comes preloaded with batch scripts which can be found in /Search/Apps/Ap
 + **Content Managers:** Dedicated tools for linking stored HTML webpages, PDF documents, software, and tools
 + **Web & Media:** Managers for website links and YouTube videos/playlists.
 + **System Maintenance:** Runs a variety of system health and maintenance tasks.
+
+**Portable Applications**
+
+Elysium comes with portable applications which can be downloaded from the releases page:
+
++ **Portable Gaming Launcher:** Standalone launcher for games, emulators, and tools.
 
 
 
