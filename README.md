@@ -29,8 +29,9 @@ Follow these steps to get your local instance running:
 1. Download the Elysium Project files.
 2. Setup a local server: Install XAMPP, WAMP, or Laragon.
 3. Deploy: Extract the project and place the folder into your server's htdocs (or equivalent) directory
-4. Rename (Optional): You can change the "Elysium" folder name to anything you prefer.
-5. Launch: Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
+4. Rename (Optional): You can rename the "Elysium" folder name to anything you prefer.
+5. Change (Optional): You can chnage the "Elysium" logo to your own. 
+6. Launch: Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
 
 **Included Web Apps**
 
