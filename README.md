@@ -41,7 +41,7 @@ Elysium comes pre-loaded with a variety of apps. You can add more by placing the
 + **Books & Comics:** Book Café, Gutendex, Pantheon, Comic Image Reader, Graphique.
 + **Media:** Soundify, Wavora, Moodify, Aurora, Ultra TV, Video Player.
 + **Productivity:** NotePad, Audiofy, Text Reader, Multi Notepad.
-+ **Xtras:** Includes Guides (functionality walkthroughs), Valhalla, and Yggdrasil.
++ **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
 
 **Included Automated Scripts**
 
