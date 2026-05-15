@@ -60,6 +60,12 @@ Elysium comes preloaded with batch scripts which can be found in /Search/Apps/Ap
 + **Web & Media:** Managers for website links and YouTube videos/playlists.
 + **System Maintenance:** Runs a variety of system health and maintenance tasks.
 
+**Portable Applications**
+
+These portable applications can be found in the releases page:
+
++ **Portable Gaming Launcher:** Standalone launcher for games, emulators, and tools.
+
 
 
 
