@@ -31,9 +31,11 @@ if (is_dir($audioDirectory)) {
 <link href="../../CSS/footer.css" rel="stylesheet" type="text/css" />
 <title>Audio Player</title>
 <style>
+
 body {
   font-weight: bold;
   margin: 0;
+  overflow: hidden; /* Prevent full page scrolling */
 }
 #playlist {
     list-style-type: none;
@@ -42,6 +44,9 @@ body {
     position: relative;
     z-index: 1;
     margin-top: 60px;
+    height: 60vh;          /* Playlist height */
+    overflow-y: auto;      /* Only playlist scrolls */
+    overflow-x: hidden;
 }
 #playlist li {
     margin-bottom: 5px;

@@ -30,16 +30,15 @@ if (is_dir($videoDirectory)) {
 body {
   font-weight: bold;
   margin: 0;
+  overflow: hidden; /* Prevent full page scrolling */
 }
 #video-player {
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 220px);
+  object-fit: contain;
+  display: block;
 }
-#video-input {
-  margin-top: 20px;
-}
+#video-input {margin-top: 20px;}
 
 button {
     background: linear-gradient(135deg, #0d47a1, #1976d2); 

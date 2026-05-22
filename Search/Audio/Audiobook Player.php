@@ -1,4 +1,22 @@
+<?php
+// Scan the "audio" folder for files
+$audioDirectory = 'Audiobook Player/';
+$audioFiles = [];
 
+if (is_dir($audioDirectory)) {
+    $files = scandir($audioDirectory);
+    foreach ($files as $file) {
+        // Filter for audio extensions
+        if (preg_match('/\.(mp3|m4b|ogg|wav|aac|flac|m4a|m4p|aax|aa)$/i', $file)) {
+            // Store as object-like structure to match JS File object name property
+            $audioFiles[] = [
+                'name' => $file,
+                'path' => $audioDirectory . $file
+            ];
+        }
+    }
+}
+?>
 
 
 <!doctype html>
@@ -20,13 +38,19 @@
 body {
   font-weight: bold;
   margin: 0;
+  overflow: hidden; /* Prevent full page scrolling */
 }
-			
 #playlist {
     list-style-type: none;
     padding: 0;
-    text-align: center; /* Center text within playlist */
-  }
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    margin-top: 60px;
+    height: 60vh;          /* Playlist height */
+    overflow-y: auto;      /* Only playlist scrolls */
+    overflow-x: hidden;
+}
 
 #playlist li {
     margin-bottom: 5px;
@@ -71,6 +95,7 @@ button:hover {
 <button class="demo w3-opacity w3-hover-opacity-off button" id="play-button">Play</button>
 <button class="demo w3-opacity w3-hover-opacity-off button" id="uploadButton" onclick="uploadMusic()">Load</button>
 <input type="file" id="audio-file-input" style="display: none;" webkitdirectory directory>
+<button class="demo w3-opacity w3-hover-opacity-off button" id="audio-scan-btn">Scan</button>
 </div>
 
 
@@ -96,6 +121,7 @@ button:hover {
 <script>
 const audioPlayer = document.getElementById("audio-player");
 const playButton = document.getElementById("play-button");
+const scanButton = document.getElementById("audio-scan-btn");
 const previousButton = document.getElementById("previous-button");
 const nextButton = document.getElementById("next-button");
 const audioFileInput = document.getElementById("audio-file-input");
@@ -103,6 +129,8 @@ const playlistElement = document.getElementById("playlist");
 
 let playlist = [];
 let currentTrack = 0;
+
+const serverFiles = <?php echo json_encode($audioFiles); ?>;
 
 // Highlight the current playing track
 function highlightCurrentTrack() {
@@ -119,11 +147,18 @@ function highlightCurrentTrack() {
 // Add event listener to the file input
 audioFileInput.addEventListener("change", handleFileSelect);
 
-// Load a track and start playing
+
 function loadTrack(track) {
-  audioPlayer.src = URL.createObjectURL(track);
+  if (!track) return;
+
+  // Handle uploaded files OR scanned server files
+  const source = track.path ? track.path : URL.createObjectURL(track);
+
+  audioPlayer.src = source;
   audioPlayer.play();
+
   highlightCurrentTrack();
+  playButton.textContent = "Pause";
 }
 
 // Display the playlist
@@ -142,6 +177,19 @@ function displayPlaylist() {
   });
   highlightCurrentTrack();
 }
+
+
+// Scan folder event
+scanButton.addEventListener("click", () => {
+    if (serverFiles.length > 0) {
+        playlist = serverFiles;
+        currentTrack = 0;
+        loadTrack(playlist[currentTrack]);
+        displayPlaylist();
+    } else {
+        alert("No audio found in 'audio' folder.");
+    }
+});
 
 // Add event listeners to the buttons
 playButton.addEventListener("click", () => {
