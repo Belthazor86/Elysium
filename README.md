@@ -67,6 +67,8 @@ Elysium comes with portable applications which can be downloaded from the releas
 
 + **Portable Gaming Launcher:** Standalone launcher for games, emulators, and tools.
 
+> 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
+
 
 
 
