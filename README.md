@@ -65,7 +65,9 @@ Elysium comes preloaded with batch scripts which can be found in /Search/Apps/Ap
 
 Elysium comes with portable applications which can be downloaded from the releases page:
 
-+ **Portable Gaming Launcher:** Standalone launcher for games, emulators, and tools.
++ **Portable Gaming Launcher:** Standalone launcher for games, emulators, and tools. Click [Here](https://github.com/Belthazor86/Elysium/releases/tag/Gaming).
+
+  
 
 > 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
 
