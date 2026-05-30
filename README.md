@@ -1,73 +1,23 @@
-**Elysium**
+**Portable Game Launcher - v1.0.0**
 
-Elysium is a plug-and-play web app platform built with HTML and PHP. It allows users to create a personalized web-based client using local servers like XAMPP, WAMP, or Laragon to integrate and interact with their favorite web applications in a single unified dashboard.
+This is the first release of the portable game launcher
 
-**Key Features**
+**Instructions** 
 
-+ **Centralized Hub:** Interact with books, comics, music, podcasts, games, and PDFs in one place
-+ **Flexible Storage:** Access content via local web servers, cloud services (Box, Google Drive), or internal/external storage.
-+ **Customizable:** Easily add your own categories and web apps.
-+ **Plug & Play:** Simple setup with no complex database configurations required.
+1. Download and extract the .zip file.
+2. Add games, emulators, and tools to the games folder.
+3. Add cover art to the posters folder (Ensure the art filename matches the game folder name).
+4. Categorize (Optional): Add a text file and rename it to your category (e.g., RPG, Hack and Slash, Emulators)
+5. Launch: Open the Portable Game Launcher
+6. Assign Path: Click once on a poster and navigate to the .exe of the required game, emulator, or tool
 
-**Folder Structure**
+**Technical Notes**
 
-The platform is organized into the following directory structure:
+- **Path Persistence:** Once a game, emulator, or tool is assigned, the path is saved. You don't need to re-assign it unless the path file is deleted
+- **Relocation Warning:** If you move the Portable Game Launcher folder to a different directory or drive, you will need to re-assign the paths for your games, tools, and emulators.
+- **Input:** Do not double-click. Only a single click is needed on the posters.
+- **Steam Integration**: This launcher can be added as a "Non-Steam Game" to your Steam library for easier access.
 
-+ **CSS:** Contains stylesheets for colors, layout, and visual design.
-+ **Files:** Stores user media like PDFs, images, and audio.
-+ **Fonts:** Main typography files for the dashboard.
-+ **Images:** Interface wallpapers.
-+ **Logos:** Main Elysium branding assets.
-+ **Messages:** Text snippets for Elysium, Valhalla, and Yggdrasil pages.
-+ **Search:** The core directory. This is where all web apps live, organized by category.
-+ **Index.php:** The main entry point to launch the dashboard.
-
-**Installation & Setup**
-
-Follow these steps to get your local instance running:
-
-1. **Download:** Download the Elysium Project files.
-2. **Setup a local server:** Install XAMPP, WAMP, or Laragon.
-3. **Deploy:** Extract the project and place the folder into your server's htdocs (or equivalent) directory
-4. **Rename (Optional):** Rename the "Elysium" folder name to anything you prefer.
-5. **Change (Optional):** Change the "Elysium" logo to your own. 
-6. **Launch:** Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
-
-**Included Web Apps**
-
-Elysium comes pre-loaded with a variety of apps. You can add more by placing them in the appropriate category within the /Search folder.
-
-+ **Gaming:** Flash Player, Flashbot, Flashboy, Gameology, Retrocast, Web U, XStation.
-+ **Books & Comics:** Book Café, Gutendex, Pantheon, Comic Image Reader, Graphique.
-+ **Media:** Soundify, Wavora, Moodify, Aurora, Ultra TV, Video Player.
-+ **Productivity:** NotePad, Audiofy, Text Reader, Multi Notepad.
-+ **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
-
-**Included Automated Scripts**
-
-Elysium comes preloaded with batch scripts which can be found in /Search/Apps/AppBarn/Tools. 
-
-**Drop-In Scripts**
-
-+ **Defragmentation:** Defragments files on an HDD.
-+ **Compression:** Compress both files and folders
-+ **Organizer Tools:** Includes scripts for File & Folder Creation and Moving files into respective folders
-+ **File Converters:** Quickly convert between HTML, PHP, and Text formats.
-
-**Interactive Scripts**
-
-+ **Flash Link Managers:** Separate tools for linking stored (Offline) .swf games and Online Flash links.
-+ **Content Managers:** Dedicated tools for linking stored HTML webpages, PDF documents, software, and tools
-+ **Web & Media:** Managers for website links and YouTube videos/playlists.
-+ **System Maintenance:** Runs a variety of system health and maintenance tasks.
-
-**Portable Applications**
-
-Elysium comes with portable applications which can be downloaded from the releases page:
-
-+ **Portable Gaming Launcher:** Standalone launcher for games, emulators, and tools.
-
-> 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
 
 
 
