@@ -61,11 +61,8 @@ Elysium comes preloaded with batch scripts which can be found in /Search/Apps/Ap
 + **Web & Media:** Managers for website links and YouTube videos/playlists.
 + **System Maintenance:** Runs a variety of system health and maintenance tasks.
 
-**Portable Applications** (Not Available still in development)
-
-Visit [Nexus](https://github.com/Belthazor86/Nexus)
-
-  
+### Nexus: Portable Applications
+🛠️ **Status:** In development. Coming soon!
 
 > 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
 
