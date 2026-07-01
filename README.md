@@ -63,7 +63,7 @@ Elysium comes preloaded with batch scripts which can be found in /Search/Apps/Ap
 
 **Portable Applications** (Still in development)
 
-Visit [Nexus]()
+Visit [Nexus](https://github.com/Belthazor86/Nexus)
 
   
 
