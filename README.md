@@ -37,31 +37,18 @@ Follow these steps to get your local instance running:
 
 Elysium comes pre-loaded with a variety of apps. You can add more by placing them in the appropriate category within the /Search folder.
 
-+ **Gaming:** Flash Player, Flashbot, Flashboy, Gameology, Retrocast, Web U, XStation.
-+ **Books & Comics:** Book Café, Gutendex, Pantheon, Comic Image Reader, Graphique.
-+ **Media:** Soundify, Wavora, Moodify, Aurora, Ultra TV, Video Player.
++ **Audio:** Aurora, Soundify, Storyboard, Themata, Wavora.
++ **Gaming:** Flashbot, Flashboy, Gameology, Web U.
++ **Books & Comics:** Fumetti, Graphique, Novella, Scribe.
++ **Gallary:** Fumetti, Graphique, Novella, Scribe.
++ **Music:** Andromeda, Moodify, Musica, Pandora, Sahara, Serenade.
 + **Productivity:** NotePad, Audiofy, Text Reader, Multi Notepad.
 + **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
 
-**Included Automated Scripts**
-
-Elysium comes preloaded with batch scripts which can be found in /Search/Apps/AppBarn/Tools. 
-
-**Drop-In Scripts**
-
-+ **Defragmentation:** Defragments files on an HDD.
-+ **Compression:** Compress both files and folders
-+ **Organizer Tools:** Includes scripts for File & Folder Creation and Moving files into respective folders
-+ **File Converters:** Quickly convert between HTML, PHP, and Text formats.
-
-**Interactive Scripts**
-
-+ **Flash Link Managers:** Separate tools for linking stored (Offline) .swf games and Online Flash links.
-+ **Content Managers:** Dedicated tools for linking stored HTML webpages, PDF documents, software, and tools
-+ **Web & Media:** Managers for website links and YouTube videos/playlists.
-+ **System Maintenance:** Runs a variety of system health and maintenance tasks.
-
 ### Nexus: Portable Applications
+🛠️ **Status:** In development. Coming soon!
+
+### Homunculus: Automated Scripts
 🛠️ **Status:** In development. Coming soon!
 
 > 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
