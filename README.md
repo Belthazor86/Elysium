@@ -38,7 +38,7 @@ Follow these steps to get your local instance running:
 Elysium comes pre-loaded with a variety of apps. You can add more by placing them in the appropriate category within the /Search folder.
 
 + **Audio:** Aurora, Soundify, Storyboard, Themata, Wavora.
-+ **Gaming:** Flashbot, Flashboy, Gameology, Web U.
++ **Gaming:** Flashbot, Flashboy, Web U.
 + **Books & Comics:** Fumetti, Graphique, Novella, Scribe.
 + **Gallary:** Boardify, Figura, Gallerium, Imagen.
 + **Music:** Andromeda, Moodify, Musica, Pandora, Sahara, Serenade.
