@@ -65,6 +65,7 @@ Elysium comes preloaded with batch scripts which can be found in /Search/Apps/Ap
 🛠️ **Status:** In development. Coming soon!
 
 > 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
+> 📝 **Usage:** Elysium is for personal use only.
 
 
 
