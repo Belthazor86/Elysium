@@ -40,9 +40,11 @@ Elysium comes pre-loaded with a variety of apps. You can add more by placing the
 + **Audio:** Aurora, Soundify, Storyboard, Themata, Wavora.
 + **Gaming:** Flashbot, Flashboy, Gameology, Web U.
 + **Books & Comics:** Fumetti, Graphique, Novella, Scribe.
-+ **Gallary:** Fumetti, Graphique, Novella, Scribe.
++ **Gallary:** Boardify, Figura, Gallerium, Imagen.
 + **Music:** Andromeda, Moodify, Musica, Pandora, Sahara, Serenade.
-+ **Productivity:** NotePad, Audiofy, Text Reader, Multi Notepad.
++ **Online:** Discover, Obsidian.
++ **Text:** ArchNote, Audiofy, Legere, Serpentine, Taccuino.
++ **Videos:** Hydrae, Lorevania, Vetra, Videre, WonderBox.
 + **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
 
 ### Nexus: Portable Applications
