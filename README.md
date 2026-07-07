@@ -37,37 +37,24 @@ Follow these steps to get your local instance running:
 
 Elysium comes pre-loaded with a variety of apps. You can add more by placing them in the appropriate category within the /Search folder.
 
-+ **Gaming:** Flash Player, Flashbot, Flashboy, Gameology, Retrocast, Web U, XStation.
-+ **Books & Comics:** Book Café, Gutendex, Pantheon, Comic Image Reader, Graphique.
-+ **Media:** Soundify, Wavora, Moodify, Aurora, Ultra TV, Video Player.
-+ **Productivity:** NotePad, Audiofy, Text Reader, Multi Notepad.
++ **Audio:** Aurora, Soundify, Storyboard, Themata, Wavora.
++ **Gaming:** Flashbot, Flashboy, Web U.
++ **Books & Comics:** Fumetti, Graphique, Novella, Scribe.
++ **Gallary:** Boardify, Figura, Gallerium, Imagen.
++ **Music:** Andromeda, Moodify, Musica, Pandora, Sahara, Serenade.
++ **Online:** Discover, Obsidian.
++ **Text:** ArchNote, Audiofy, Legere, Serpentine, Taccuino.
++ **Videos:** Hydrae, Lorevania, Vetra, Videre, WonderBox.
 + **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
 
-**Included Automated Scripts**
+### Nexus: Portable Applications
+🛠️ **Status:** In development. Coming soon!
 
-Elysium comes preloaded with batch scripts which can be found in /Search/Apps/AppBarn/Tools. 
-
-**Drop-In Scripts**
-
-+ **Defragmentation:** Defragments files on an HDD.
-+ **Compression:** Compress both files and folders
-+ **Organizer Tools:** Includes scripts for File & Folder Creation and Moving files into respective folders
-+ **File Converters:** Quickly convert between HTML, PHP, and Text formats.
-
-**Interactive Scripts**
-
-+ **Flash Link Managers:** Separate tools for linking stored (Offline) .swf games and Online Flash links.
-+ **Content Managers:** Dedicated tools for linking stored HTML webpages, PDF documents, software, and tools
-+ **Web & Media:** Managers for website links and YouTube videos/playlists.
-+ **System Maintenance:** Runs a variety of system health and maintenance tasks.
-
-**Portable Applications**
-
-Visit [Nexus](https://github.com/Belthazor86/Nexus)
-
-  
+### Homunculus: Automated Scripts
+🛠️ **Status:** In development. Coming soon!
 
 > 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
+> 📝 **Usage:** Elysium is for personal use only.
 
 
 
