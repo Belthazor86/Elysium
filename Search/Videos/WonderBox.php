@@ -1,5 +1,9 @@
 <?php
-// Serve embedded script wrapped in HTML to execute inside iframe
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+<?php
 if (isset($_GET['embedScript'])) {
     $path = $_GET['embedScript'];
     $full = realpath(__DIR__ . '/' . $path);
@@ -53,7 +57,7 @@ if (isset($_GET['embedScript'])) {
     exit;
 }
 
-// AJAX: Search media folders and return matching posters/scripts
+// AJAX: Search media folders → cover image + all video files
 if (isset($_GET['category'])) {
     $searchRaw = isset($_GET['search']) ? $_GET['search'] : '';
     $query = strtolower(str_replace([' ', '_', '-'], '', trim($searchRaw)));
@@ -62,40 +66,33 @@ if (isset($_GET['category'])) {
     $results = [];
 
     if (is_dir($baseDir)) {
-        foreach (scandir($baseDir) as $folder) {
-            if ($folder === '.' || $folder === '..') continue;
-            
-            $normalizedFolder = strtolower(str_replace([' ', '_', '-'], '', $folder));
-            
-            // If query is empty, show everything. Otherwise, filter.
-            if ($query === '' || strpos($normalizedFolder, $query) !== false) {
-                $postersDir = "$baseDir/$folder/Posters";
-                $scriptsDir = "$baseDir/$folder/Scripts";
+        foreach (scandir($baseDir) as $titleFolder) {
+            if ($titleFolder === '.' || $titleFolder === '..') continue;
+            $titlePath = "$baseDir/$titleFolder";
+            if (!is_dir($titlePath)) continue;
 
-                $posterTxts = glob("$postersDir/*.txt");
-                $scripts = glob("$scriptsDir/*.js");
+            $normalizedTitle = strtolower(str_replace([' ', '_', '-'], '', $titleFolder));
+            if ($query !== '' && strpos($normalizedTitle, $query) === false) continue;
 
-                if ($posterTxts) {
-                    natsort($posterTxts);
-                    $posterTxts = array_values($posterTxts);
-                }
-                if ($scripts) {
-                    natsort($scripts);
-                    $scripts = array_values($scripts);
-                }
+            $imageFiles = glob("$titlePath/*.{jpg,jpeg,png,gif,webp,bmp}", GLOB_BRACE);
+            $videoFiles = glob("$titlePath/*.{mp4,webm,ogg,mov}", GLOB_BRACE);
 
-                $count = count($posterTxts);
-                for ($i = 0; $i < $count; $i++) {
-                    $scriptFile = $scripts[$i] ?? null;
-                    $imageLink = trim(file_get_contents($posterTxts[$i]));
+            if (empty($imageFiles) || empty($videoFiles)) continue;
 
-                    $results[] = [
-                        'title' => $folder,
-                        'image' => $imageLink,
-                        'script' => $scriptFile ? "WonderBox/$category/$folder/Scripts/" . basename($scriptFile) : null,
-                    ];
-                }
+            natsort($imageFiles);
+            natsort($videoFiles);
+
+            $coverUrl = "WonderBox/$category/$titleFolder/" . basename($imageFiles[0]);
+            $videoUrls = [];
+            foreach ($videoFiles as $vf) {
+                $videoUrls[] = "WonderBox/$category/$titleFolder/" . basename($vf);
             }
+
+            $results[] = [
+                'title' => $titleFolder,
+                'image' => $coverUrl,
+                'videos' => $videoUrls,
+            ];
         }
     }
 
@@ -188,6 +185,8 @@ input#searchInput:focus {
   transform: scale(1.07);
   box-shadow: 0 0 20px #00aaffee;
 }
+
+/* --- Overlay & controls --- */
 #overlay {
   position: fixed;
   top: 0;
@@ -208,7 +207,16 @@ input#searchInput:focus {
   background: #000;
   border-radius: 15px;
   box-shadow: 0 0 40px #00ffc3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   overflow: hidden;
+}
+#overlay video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  outline: none;
 }
 #overlay button.closeBtn {
   position: absolute;
@@ -227,11 +235,53 @@ input#searchInput:focus {
 #overlay button.closeBtn:hover {
   background: #ff1a1a;
 }
-#overlay iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+
+/* --- Control bar --- */
+.audio-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 10px 20px;
+  border-radius: 30px;
+  backdrop-filter: blur(6px);
+  z-index: 2;
+}
+.ctrl-btn {
   background: #111;
+  border: 2px solid #00aaff;
+  color: #00aaff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  padding: 0;
+  line-height: 1;
+}
+.ctrl-btn:hover {
+  background-color: #00aaff;
+  color: #000;
+  box-shadow: 0 0 15px #00aaffee;
+}
+.ctrl-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: #111;
+  color: #555;
+  border-color: #555;
+}
+.ctrl-btn:disabled:hover {
+  background: #111;
+  color: #555;
+  box-shadow: none;
 }
 </style>
 </head>
@@ -257,19 +307,26 @@ input#searchInput:focus {
 
 <div class="gallery" id="gallery"></div>
 
+<!-- Overlay with video player + transport controls -->
 <div id="overlay">
   <div class="container">
     <button class="closeBtn" onclick="closeOverlay()">✕</button>
-    <iframe id="scriptFrame" src=""></iframe>
+    <video id="overlayVideo" preload="auto" playsinline></video>
+
+    <div class="audio-controls">
+      <button id="prevBtn" class="ctrl-btn" title="Previous">⏮</button>
+      <button id="playPauseBtn" class="ctrl-btn" title="Play/Pause">▶</button>
+      <button id="nextBtn" class="ctrl-btn" title="Next">⏭</button>
+      <button id="fullscreenBtn" class="ctrl-btn" title="Full Screen">⤢</button>
+    </div>
   </div>
 </div>
-
 
 <!-- Footer -->
 <footer class="site-footer">
   <div class="footer-content">
     <p class="footer-main">
-      © 2025 <?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?> | <a href="../Xtras/Guides.php">Visit Guides for documentation</a>
+      © 2026 <?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?> | <a href="../Xtras/Guides.php">Visit Guides for documentation</a>
     </p>
     <p class="footer-specific">
     Powered by <a href="https://github.com/Belthazor86/Elysium.git" target="_blank" rel="noopener noreferrer">Elysium</a> 
@@ -277,12 +334,106 @@ input#searchInput:focus {
   </div>
 </footer>
 
-
-
 <script>
   let currentSearch = '';
   let currentCategory = '';
+  let currentPlaylist = [];
+  let currentAlbumIndex = 0;
+  let currentTrackIndex = 0;
 
+  const overlayVideo = document.getElementById('overlayVideo');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+  function getCurrentAlbum() {
+    return currentPlaylist[currentAlbumIndex];
+  }
+
+  function updatePlayPauseButton() {
+    playPauseBtn.innerHTML = overlayVideo.paused ? '▶' : '⏸';
+  }
+
+  function updateButtonsState() {
+    const album = getCurrentAlbum();
+    if (!album) {
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+    prevBtn.disabled = (currentTrackIndex <= 0);
+    nextBtn.disabled = (currentTrackIndex >= album.videos.length - 1);
+  }
+
+  // ---- Fullscreen handling ----
+  function isFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  }
+
+  function updateFullscreenIcon() {
+    fullscreenBtn.innerHTML = isFullscreen() ? '⤡' : '⤢';
+  }
+
+  function toggleFullscreen() {
+    if (isFullscreen()) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    } else {
+      const elem = overlayVideo;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+  }
+
+  fullscreenBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', updateFullscreenIcon);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+  document.addEventListener('mozfullscreenchange', updateFullscreenIcon);
+  document.addEventListener('MSFullscreenChange', updateFullscreenIcon);
+
+  // ---- Play/Pause & Prev/Next ----
+  playPauseBtn.addEventListener('click', () => {
+    if (overlayVideo.paused) {
+      overlayVideo.play().catch(console.warn);
+    } else {
+      overlayVideo.pause();
+    }
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (currentTrackIndex > 0) {
+      currentTrackIndex--;
+      loadAndPlayCurrentTrack();
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    const album = getCurrentAlbum();
+    if (album && currentTrackIndex < album.videos.length - 1) {
+      currentTrackIndex++;
+      loadAndPlayCurrentTrack();
+    }
+  });
+
+  overlayVideo.addEventListener('play', updatePlayPauseButton);
+  overlayVideo.addEventListener('pause', updatePlayPauseButton);
+
+  // ---- Search & category ----
   document.getElementById('searchInput').addEventListener('input', e => {
     currentSearch = e.target.value.trim();
     if (currentCategory) searchMedia();
@@ -292,6 +443,7 @@ input#searchInput:focus {
     currentCategory = cat;
     document.querySelectorAll('.buttons button').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
+    closeOverlay();
     searchMedia();
   }
 
@@ -307,33 +459,74 @@ input#searchInput:focus {
       return;
     }
 
-    for (const item of data) {
+    currentPlaylist = data;
+
+    data.forEach((album, index) => {
       const img = document.createElement('img');
-      img.src = item.image;
-      img.title = item.title;
+      img.src = album.image;
+      img.title = album.title;
       img.onclick = () => {
-        if (item.script) {
-          openOverlay(item.script);
-        } else {
-          alert('No script available for this image.');
-        }
+        openAlbum(index);
       };
       gallery.appendChild(img);
-    }
+    });
   }
 
-  function openOverlay(scriptPath) {
-    const overlay = document.getElementById('overlay');
-    const iframe = document.getElementById('scriptFrame');
-    iframe.src = `?embedScript=${encodeURIComponent(scriptPath)}`;
-    overlay.style.display = 'flex';
+  function openAlbum(albumIndex) {
+    if (!currentPlaylist.length) return;
+    document.getElementById('overlay').style.display = 'flex';
+    currentAlbumIndex = albumIndex;
+    currentTrackIndex = 0;
+    loadAndPlayCurrentTrack();
+  }
+
+  function loadAndPlayCurrentTrack() {
+    const album = getCurrentAlbum();
+    if (!album) {
+      closeOverlay();
+      return;
+    }
+
+    overlayVideo.poster = album.image;
+    overlayVideo.src = album.videos[currentTrackIndex];
+    overlayVideo.load();
+
+    overlayVideo.onended = () => {
+      currentTrackIndex++;
+      if (currentTrackIndex < album.videos.length) {
+        loadAndPlayCurrentTrack();
+      } else {
+        currentAlbumIndex++;
+        if (currentAlbumIndex < currentPlaylist.length) {
+          currentTrackIndex = 0;
+          loadAndPlayCurrentTrack();
+        } else {
+          closeOverlay();
+        }
+      }
+    };
+
+    overlayVideo.play().then(() => {
+      updatePlayPauseButton();
+    }).catch(e => {
+      console.warn('Video play failed:', e);
+    });
+
+    updateButtonsState();
   }
 
   function closeOverlay() {
     const overlay = document.getElementById('overlay');
-    const iframe = document.getElementById('scriptFrame');
-    iframe.src = '';
+    overlayVideo.pause();
+    overlayVideo.removeAttribute('src');
+    overlayVideo.onended = null;
     overlay.style.display = 'none';
+    updatePlayPauseButton();
+    updateButtonsState();
+    // If exiting overlay while fullscreen, exit fullscreen
+    if (isFullscreen()) {
+      if (document.exitFullscreen) document.exitFullscreen();
+    }
   }
 
   document.getElementById('overlay').addEventListener('click', e => {

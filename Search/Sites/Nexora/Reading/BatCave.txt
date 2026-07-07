@@ -1,1 +1,0 @@
-https://batcave.biz/search/${encodeURIComponent(query)}

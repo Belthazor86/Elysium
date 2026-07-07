@@ -1,0 +1,306 @@
+<?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+
+// ---------- AJAX handler for scanning the Legere folder ----------
+if (isset($_GET['scan']) && $_GET['scan'] === 'legere') {
+    $dir = __DIR__ . '/Legere';
+    $files = [];
+    if (is_dir($dir)) {
+        foreach (scandir($dir) as $item) {
+            if ($item === '.' || $item === '..') continue;
+            // Only accept .txt files
+            if (strtolower(pathinfo($item, PATHINFO_EXTENSION)) === 'txt') {
+                $files[] = $item;
+            }
+        }
+    }
+    header('Content-Type: application/json');
+    echo json_encode($files);
+    exit;
+}
+
+// ---------- AJAX handler for reading a file from Legere ----------
+if (isset($_GET['file'])) {
+    // For security, only allow files inside the Legere folder
+    $requestedFile = $_GET['file'];
+    $legereDir = realpath(__DIR__ . '/Legere');
+    if ($legereDir === false) {
+        http_response_code(404);
+        exit('Legere folder not found');
+    }
+    $fullPath = realpath($legereDir . '/' . basename($requestedFile));
+    if ($fullPath === false || strpos($fullPath, $legereDir) !== 0) {
+        http_response_code(403);
+        exit('Access denied');
+    }
+    if (!is_file($fullPath) || strtolower(pathinfo($fullPath, PATHINFO_EXTENSION)) !== 'txt') {
+        http_response_code(404);
+        exit('File not found');
+    }
+    header('Content-Type: text/plain; charset=utf-8');
+    readfile($fullPath);
+    exit;
+}
+?>
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<link href="../../CSS/w3.css" rel="stylesheet" type="text/css" />	
+<link href="../../CSS/fonts.css" rel="stylesheet" type="text/css" />	
+<link href="../../CSS/style.css" rel="stylesheet" type="text/css" />
+<link href="../../CSS/scroll.css" rel="stylesheet" type="text/css" />
+<link href="../../CSS/footer.css" rel="stylesheet" type="text/css" />
+<title>Text Reader</title>
+<style>
+body {
+  font-weight: bold;
+  margin: 0;
+}
+
+#playlist {
+  list-style-type: none;
+  padding: 0;
+  text-align: center; /* Center text within playlist */
+}
+
+#playlist li {
+  margin-bottom: 5px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 1.2rem;
+  transition: color 0.2s;
+}
+
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#overlay .container {
+  position: relative;
+  width: 90vw;
+  max-width: 1200px;
+  height: 75vh;
+  background: #000;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+#overlay button {
+  position: absolute;
+  top: 10px;
+  border: none;
+  padding: 6px 10px;
+  font-size: 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background: black;
+  color: #fff;
+  transition: background 0.2s;
+}
+#overlay button:hover {
+  background: #0090dd;
+}
+#overlay button:first-child {
+  right: 10px; /* Close button */
+}
+
+#bookContent {
+  max-height: 100vh;
+  width: 900px;   /* increase or decrease as you want */
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: 20px;
+  line-height: 1.6;
+  font-size: 18px;
+  color: whitesmoke;          
+  background: #000;           
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  scroll-behavior: smooth;    
+  text-align: center;
+}
+
+#bookContent pre {
+  white-space: pre-wrap;      
+  font-family: Arial, sans-serif; 
+  font-weight:bold;
+  margin: 0 auto;             
+  display: inline-block;      
+  text-align: center;         
+}
+
+button {
+    background: linear-gradient(135deg, #0d47a1, #1976d2); 
+    color: whitesmoke;
+    border: none;
+    padding: 16px 32px;
+    cursor: pointer;
+    border-radius: 12px;
+    margin: 10px;
+    font-size: 1.2em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    text-transform: capitalize;
+}
+button:hover {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    transform: scale(1.12);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+}
+
+</style>
+</head>
+<body>
+
+
+
+<h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
+
+
+<div style="width:100%; display:flex; justify-content:center; margin-top:20px;">
+    <!-- LOAD BUTTON -->
+<button id="loadFolderBtn" class="demo w3-opacity w3-hover-opacity-off button">Load</button>
+<!-- NEW SCAN BUTTON -->
+<button id="scanLegereBtn" class="demo w3-opacity w3-hover-opacity-off button">Scan</button>
+<input type="file" id="folderInput" webkitdirectory directory multiple style="display:none" />
+</div>
+
+
+<ul id="playlist"></ul>
+
+<div id="overlay">
+  <div class="container" id="overlayContainer">
+    <button onclick="closeOverlay()">✖️</button>
+    <div id="bookContent"></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-content">
+    <p class="footer-main">
+      © 2025 <?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?> | <a href="../Xtras/Guides.php">Visit Guides for documentation</a>
+    </p>
+    <p class="footer-specific">
+    Powered by <a href="https://github.com/Belthazor86/Elysium.git" target="_blank" rel="noopener noreferrer">Elysium</a> 
+    </p>
+  </div>
+</footer>
+
+<script>
+const loadFolderBtn = document.getElementById('loadFolderBtn');
+const folderInput = document.getElementById('folderInput');
+const playlist = document.getElementById('playlist');
+
+let filesMap = {};
+
+// Open folder selector
+loadFolderBtn.addEventListener('click', () => folderInput.click());
+
+// Load files from folder (existing local file input)
+folderInput.addEventListener('change', e => {
+  playlist.innerHTML = '';
+  filesMap = {};
+
+  Array.from(e.target.files)
+    .filter(file => file.name.toLowerCase().endsWith('.txt'))
+    .forEach(file => {
+      const nameWithoutExt = file.name.replace(/\.txt$/i, '');
+      filesMap[nameWithoutExt] = file;
+
+      const li = document.createElement('li');
+      li.textContent = nameWithoutExt;
+      li.classList.add("demo", "w3-opacity", "w3-hover-opacity-off");
+      li.onclick = () => openOverlay(file);
+      playlist.appendChild(li);
+    });
+});
+
+function openOverlay(file) {
+  const overlay = document.getElementById('overlay');
+  const contentDiv = document.getElementById('bookContent');
+  contentDiv.innerHTML = '';
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const pre = document.createElement('pre');
+    pre.textContent = reader.result;
+    contentDiv.appendChild(pre);
+  };
+  reader.readAsText(file);
+
+  overlay.style.display = 'flex';
+}
+
+function closeOverlay() {
+  const overlay = document.getElementById('overlay');
+  const contentDiv = document.getElementById('bookContent');
+  contentDiv.innerHTML = '';
+  overlay.style.display = 'none';
+}
+
+// ---------- NEW: Scan Legere button logic ----------
+const scanLegereBtn = document.getElementById('scanLegereBtn');
+scanLegereBtn.addEventListener('click', async () => {
+  playlist.innerHTML = '';
+  filesMap = {}; // clear any local file references
+
+  try {
+    const response = await fetch('?scan=legere');
+    if (!response.ok) throw new Error('Scan failed');
+    const fileNames = await response.json();
+
+    fileNames.forEach(fileName => {
+      const nameWithoutExt = fileName.replace(/\.txt$/i, '');
+      // We store the full file name (with extension) for the server fetch
+      const li = document.createElement('li');
+      li.textContent = nameWithoutExt;
+      li.classList.add("demo", "w3-opacity", "w3-hover-opacity-off");
+      li.onclick = () => openOverlayServer(fileName);
+      playlist.appendChild(li);
+    });
+  } catch (err) {
+    alert('Could not scan Legere folder: ' + err.message);
+  }
+});
+
+// Function to load and display a server-side text file from Legere
+async function openOverlayServer(fileName) {
+  const overlay = document.getElementById('overlay');
+  const contentDiv = document.getElementById('bookContent');
+  contentDiv.innerHTML = 'Loading...';
+  overlay.style.display = 'flex';
+
+  try {
+    const response = await fetch('?file=' + encodeURIComponent(fileName));
+    if (!response.ok) throw new Error('File not found');
+    const text = await response.text();
+    const pre = document.createElement('pre');
+    pre.textContent = text;
+    contentDiv.innerHTML = '';
+    contentDiv.appendChild(pre);
+  } catch (err) {
+    contentDiv.innerHTML = 'Error loading file.';
+  }
+}
+</script>
+
+
+
+
+</body>
+</html>

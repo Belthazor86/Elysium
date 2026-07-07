@@ -1,4 +1,10 @@
 <?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+
+<?php
 // --- VIDEO EMBED LOGIC ---
 if (isset($_GET['embedVideo'])) {
     $path = $_GET['embedVideo'];
@@ -109,35 +115,39 @@ if (isset($_GET['search']) && isset($_GET['category'])) {
             if ($folder === '.' || $folder === '..') continue;
             $normalizedFolder = strtolower(str_replace([' ', '_', '-'], '', $folder));
             
-            // Logic Change: If query is empty, show everything. Otherwise, match the query.
+            // If query is empty, show everything. Otherwise, match the query.
             if ($query === '' || strpos($normalizedFolder, $query) !== false) {
-                $postersDir = "$baseDir/$folder/Posters";
-                $scriptsDir = "$baseDir/$folder/Scripts";
+                $folderPath = "$baseDir/$folder";
+                if (!is_dir($folderPath)) continue;
 
-                $images = glob("$postersDir/*.{jpg,jpeg,png,gif,webp}", GLOB_BRACE);
-                if ($images) {
+                // Look for item subfolders inside this title group
+                $itemFolders = glob("$folderPath/*", GLOB_ONLYDIR);
+                if (empty($itemFolders)) continue;
+                
+                foreach ($itemFolders as $itemPath) {
+                    $itemFolderName = basename($itemPath);
+                    
+                    // Find the first image file (cover) in the item subfolder
+                    $images = glob("$itemPath/*.{jpg,jpeg,png,gif,webp}", GLOB_BRACE);
+                    if (empty($images)) continue; // skip if no cover image
                     natsort($images);
-                    foreach ($images as $imgPath) {
-                        $imgName = pathinfo($imgPath, PATHINFO_FILENAME);
-                        $targetSubfolder = "$scriptsDir/$imgName";
-                        $videoPath = '';
+                    $coverImage = reset($images);
 
-                        if (is_dir($targetSubfolder)) {
-                            $subVideos = glob("$targetSubfolder/*.{mp4,webm,ogg}", GLOB_BRACE);
-                            if (!empty($subVideos)) {
-                                natsort($subVideos);
-                                $firstVideo = reset($subVideos);
-                                $videoPath = str_replace(realpath(__DIR__) . DIRECTORY_SEPARATOR, '', realpath($firstVideo));
-                                $videoPath = str_replace('\\', '/', $videoPath);
-                            }
-                        }
-
-                        $results[] = [
-                            'title' => $folder,
-                            'image' => "Vetra/$category/$folder/Posters/" . basename($imgPath),
-                            'video' => $videoPath ?: null,
-                        ];
+                    // Find the first video file in the item subfolder
+                    $videos = glob("$itemPath/*.{mp4,webm,ogg}", GLOB_BRACE);
+                    $videoPath = '';
+                    if (!empty($videos)) {
+                        natsort($videos);
+                        $firstVideo = reset($videos);
+                        $videoPath = str_replace(realpath(__DIR__) . DIRECTORY_SEPARATOR, '', realpath($firstVideo));
+                        $videoPath = str_replace('\\', '/', $videoPath);
                     }
+
+                    $results[] = [
+                        'title' => $folder,
+                        'image' => "Vetra/$category/$folder/$itemFolderName/" . basename($coverImage),
+                        'video' => $videoPath ?: null,
+                    ];
                 }
             }
         }
@@ -328,11 +338,9 @@ input#searchInput:focus {
   let currentCategory = '';
   document.getElementById('searchInput').addEventListener('input', e => {
     currentSearch = e.target.value.trim();
-    // Logic Change: Search automatically if a category is already selected
     if(currentCategory) searchMedia();
   });
   function setCategory(cat, event) {
-    // Logic Change: Removed "2-character" alert to allow folder viewing
     currentCategory = cat;
     document.querySelectorAll('.buttons button').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');

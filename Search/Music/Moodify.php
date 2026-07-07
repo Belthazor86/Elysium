@@ -1,6 +1,43 @@
+<?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
 
 
+<?php
+// --- PHP scanner for server-side Moodify folder ---
+if (isset($_GET['scan'])) {
+    header('Content-Type: application/json');
+    $dir = __DIR__ . '/Moodify';
+    $response = ['music' => [], 'images' => []];
 
+    if (is_dir($dir)) {
+        $files = scandir($dir);
+        // Filter and sort naturally
+        $musicExts = ['mp3', 'wav', 'ogg', 'm4a'];
+        $imageExts = ['jpg', 'jpeg', 'png', 'gif'];
+        $music = [];
+        $images = [];
+
+        foreach ($files as $file) {
+            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            if (in_array($ext, $musicExts)) {
+                $music[] = $file;
+            } elseif (in_array($ext, $imageExts)) {
+                $images[] = $file;
+            }
+        }
+        // Natural sort for human-friendly ordering
+        natsort($music);
+        natsort($images);
+        $response['music'] = array_values($music);
+        $response['images'] = array_values($images);
+    }
+
+    echo json_encode($response);
+    exit;
+}
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -25,7 +62,7 @@
   #wallpaper {
     width: 100%;
     height: 75vh;
-    background-size: contain; /* fit properly */
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     transition: background-image 1s ease-in-out;
@@ -62,7 +99,7 @@
   }
 
   input[type="file"] {
-    display: none; /* hide default input */
+    display: none;
   }
 
   #fullscreenOverlay {
@@ -81,7 +118,7 @@
   #fullscreenOverlay img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* fit properly */
+    object-fit: contain;
     border: 4px solid #0ff;
     border-radius: 10px;
     box-shadow: 0 0 50px #0ff;
@@ -104,14 +141,13 @@
   <button id="playBtn">Play</button>
   <label for="folderPicker" class="fileButton">Load</label>
   <input type="file" id="folderPicker" webkitdirectory directory multiple>
+  <button id="scanBtn" class="fileButton">Scan</button>   <!-- NEW SCAN BUTTON -->
   <button id="pauseBtn">Pause</button>
   <button id="nextBtn">Next</button>
 </div>
 
 <audio id="audio" controls style="display:none;"></audio>
 <div id="fullscreenOverlay"><img src="" alt="Fullscreen Wallpaper"></div>
-
-
 
 <!-- Footer -->
 <footer class="site-footer">
@@ -125,8 +161,6 @@
   </div>
 </footer>
 
-
-
 <script>
 let musicFiles = [];
 let imageFiles = [];
@@ -137,7 +171,12 @@ let folderPicker = document.getElementById('folderPicker');
 let fullscreenOverlay = document.getElementById('fullscreenOverlay');
 let fullscreenImg = fullscreenOverlay.querySelector('img');
 
-// Load folder & numeric sort
+// --- Helper: get URL from a file (local File object or server URL string) ---
+function getMediaURL(item) {
+  return (item instanceof File) ? URL.createObjectURL(item) : item;
+}
+
+// --- Load folder (local) ---
 folderPicker.addEventListener('change', (e) => {
   musicFiles = [];
   imageFiles = [];
@@ -151,10 +190,10 @@ folderPicker.addEventListener('change', (e) => {
   });
 
   const numericSort = (a, b) => {
-  const nameA = a.webkitRelativePath.toLowerCase();
-  const nameB = b.webkitRelativePath.toLowerCase();
-  return nameA.localeCompare(nameB);
- };
+    const nameA = a.webkitRelativePath.toLowerCase();
+    const nameB = b.webkitRelativePath.toLowerCase();
+    return nameA.localeCompare(nameB);
+  };
 
   musicFiles.sort(numericSort);
   imageFiles.sort(numericSort);
@@ -162,19 +201,39 @@ folderPicker.addEventListener('change', (e) => {
   if(musicFiles.length===0) alert('No music files found!');
   if(imageFiles.length===0) alert('No image files found!');
 
-  if(musicFiles.length>0) playTrack(currentTrack); // auto-play on folder load
+  if(musicFiles.length>0) playTrack(currentTrack);
+});
+
+// --- Scan server-side Moodify folder (NEW) ---
+document.getElementById('scanBtn').addEventListener('click', () => {
+  fetch(window.location.pathname + '?scan=1')
+    .then(res => res.json())
+    .then(data => {
+     musicFiles = data.music.map(f => 'Moodify/' + encodeURIComponent(f));
+     imageFiles = data.images.map(f => 'Moodify/' + encodeURIComponent(f));
+      currentTrack = 0;
+
+      if (musicFiles.length === 0) alert('No music files found in Moodify folder!');
+      if (imageFiles.length === 0) alert('No image files found in Moodify folder!');
+
+      if (musicFiles.length > 0) playTrack(currentTrack);
+    })
+    .catch(err => {
+      alert('Scan failed. Make sure the Moodify folder exists on the server.');
+      console.error(err);
+    });
 });
 
 // Play song & update wallpaper
 function playTrack(index){
   if(musicFiles.length===0) return;
 
-  audio.src = URL.createObjectURL(musicFiles[index]);
+  audio.src = getMediaURL(musicFiles[index]);
   audio.play();
 
   if(imageFiles.length>0){
     const wallpaperIndex = index % imageFiles.length;
-    wallpaperDiv.style.backgroundImage = `url(${URL.createObjectURL(imageFiles[wallpaperIndex])})`;
+    wallpaperDiv.style.backgroundImage = `url(${getMediaURL(imageFiles[wallpaperIndex])})`;
   }
 
   // Automatic next track
@@ -183,7 +242,7 @@ function playTrack(index){
       currentTrack++;
       playTrack(currentTrack);
     } else {
-      audio.pause(); // stop at last song
+      audio.pause();
     }
   };
 }
@@ -202,16 +261,11 @@ document.getElementById('prevBtn').addEventListener('click', prevTrack);
 wallpaperDiv.addEventListener('click', () => {
   if(imageFiles.length===0) return;
   const wallpaperIndex = currentTrack % imageFiles.length;
-  fullscreenImg.src = URL.createObjectURL(imageFiles[wallpaperIndex]);
+  fullscreenImg.src = getMediaURL(imageFiles[wallpaperIndex]);
   fullscreenOverlay.style.display='flex';
 });
 fullscreenOverlay.addEventListener('click', ()=>fullscreenOverlay.style.display='none');
 </script>
-
-
-
-
-
 
 </body>
 </html>

@@ -1,1 +1,0 @@
-https://reelgood.com/search?q=${encodeURIComponent(query)}

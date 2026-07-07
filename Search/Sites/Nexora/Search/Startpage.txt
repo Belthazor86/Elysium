@@ -1,1 +1,0 @@
-https://www.startpage.com/sp/search?q=${encodeURIComponent(query)}

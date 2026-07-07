@@ -1,1 +1,0 @@
-https://store.ubisoft.com/search?q=${encodeURIComponent(query)}

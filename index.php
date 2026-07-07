@@ -1,4 +1,10 @@
 <?php
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/security.php';
+?>
+
+
+<?php
 // --- AJAX Handler: Fetches files from the folders ---
 if (isset($_GET['ajax_folder'])) {
     $folder = $_GET['ajax_folder'];

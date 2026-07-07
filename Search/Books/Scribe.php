@@ -1,4 +1,10 @@
 <?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+
+<?php
 if (isset($_GET['search']) && isset($_GET['category'])) {
     $query = strtolower(str_replace([' ', '_', '-'], '', trim($_GET['search'])));
     
@@ -161,20 +167,21 @@ input#searchInput:focus {
 }
 
 .buttons {
-  margin-top: 15px;
+  margin-top: 30px;
   margin-bottom: 30px;
-  display: grid; /* Changed from flex to grid */
-  grid-template-columns: repeat(3, 1fr); /* 4 equal columns */
+  display: grid;
+  /* Auto-fit will automatically adjust columns based on available space */
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 12px;
   width: 100%;
-  max-width: 100px; /* Optional: keeps the grid from getting too wide */
+  max-width: 400px; /* Adjusted for better layout with more buttons */
   justify-content: center;
 }
 
-/* Optional: Make it responsive so it drops to 2 columns on small screens */
+/* Optional: Make it responsive for small screens */
 @media (max-width: 600px) {
   .buttons {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   }
 }
 

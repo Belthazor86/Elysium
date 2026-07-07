@@ -1,7 +1,0 @@
-const iframe1 = document.createElement('iframe');
-iframe1.src = 'https://www.youtube.com/embed/TrepU7KPtWA?list=PLyShR8MXTZ671irYiMoVzvViD4tn6l7Y4';
-iframe1.width = '100%';
-iframe1.height = '100%';
-iframe1.frameBorder = '0';
-iframe1.allowFullscreen = true;
-document.body.appendChild(iframe1);

@@ -1,3 +1,4 @@
+Use CloudBeats to listen to music on the cloud.
 Use CloudBooks to listen to audiobooks on the cloud.
 Install Lakka for a RetroArch style Gaming.
 Use FlashArch for Flash Gaming.

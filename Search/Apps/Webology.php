@@ -1,4 +1,11 @@
 <?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+
+
+<?php
 // 1. Logic to scan for subfolders only
 function scanFolder($folderPath) {
     $folders = [];

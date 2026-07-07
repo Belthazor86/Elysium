@@ -1,4 +1,10 @@
 <?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+
+<?php
 if (isset($_GET['search']) && isset($_GET['category'])) {
     $query = strtolower(str_replace([' ', '_', '-'], '', trim($_GET['search'])));
     

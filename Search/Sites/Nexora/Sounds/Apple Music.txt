@@ -1,1 +1,0 @@
-https://music.apple.com/us/search?term=${encodeURIComponent(query)}

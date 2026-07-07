@@ -1,5 +1,92 @@
+<?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
 
 
+<?php
+// --- Server-side folder scanning ---
+$scanDir = './Pandora/';   // Change this to your desired server folder
+
+if (isset($_GET['scan']) && $_GET['scan'] === '1') {
+    header('Content-Type: application/json');
+
+    $audioExts = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac'];
+    $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+
+    $realDir = realpath($scanDir);
+    if (!$realDir || !is_dir($realDir)) {
+        echo json_encode(['error' => 'Directory not found']);
+        exit;
+    }
+
+    // Collect all files
+    $files = array_diff(scandir($realDir), ['.', '..']);
+    $audioFiles = [];
+    $imageFiles = [];
+
+    foreach ($files as $file) {
+        $fullPath = $realDir . DIRECTORY_SEPARATOR . $file;
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $name = pathinfo($file, PATHINFO_FILENAME);
+
+        if (in_array($ext, $audioExts)) {
+            $audioFiles[] = [
+                'path' => $scanDir . $file,   // relative URL
+                'name' => $name,
+                'key'  => extractKey($name)
+            ];
+        } elseif (in_array($ext, $imageExts)) {
+            $imageFiles[] = [
+                'path' => $scanDir . $file,
+                'name' => $name,
+                'key'  => extractKey($name)
+            ];
+        }
+    }
+
+    // Match audio with images by key (same logic as your JS)
+    $tracks = [];
+    foreach ($audioFiles as $audio) {
+        $img = array_values(array_filter($imageFiles, function($img) use ($audio) {
+            return $img['key'] === $audio['key'];
+        }));
+        if (!empty($img)) {
+            $tracks[] = [
+                'audio' => $audio['path'],
+                'image' => $img[0]['path'],
+                'key'   => $audio['key']
+            ];
+        }
+    }
+
+    // Sort numerically then alphabetically
+    usort($tracks, function($a, $b) {
+        $numA = intval($a['key']);
+        $numB = intval($b['key']);
+        if (is_numeric($a['key']) && is_numeric($b['key'])) {
+            return $numA - $numB;
+        }
+        return strcasecmp($a['key'], $b['key']);
+    });
+
+    echo json_encode($tracks);
+    exit;
+}
+
+/**
+ * Extract a matching key from a filename:
+ * - If it contains digits, use the first group of digits
+ * - Otherwise, use the whole filename (lowercase)
+ */
+function extractKey($name) {
+    $name = strtolower($name);
+    if (preg_match('/\d+/', $name, $m)) {
+        return $m[0];
+    }
+    return $name;
+}
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -94,37 +181,32 @@ button:hover {
   audio {
     width: 100%;
   }
-}
-		
+}	
 </style>
 	
-
 
 <body>
 	
 		
 
-  
 <!-- Drag and Drop Area -->
 <h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
 <div id="dropArea">Click, Drag or Drop to select folder</div>
 
-<!-- File Upload Button (Hidden) -->
-<input type="file" id="uploadInput" webkitdirectory directory multiple style="display:none;"><br><br>
-
 <!-- Music Player and Controls -->
 <img id="coverImage" src="Sahara/Pandora.jpg" alt="Cover will appear here"><br>
 <audio id="audioPlayer" controls></audio><br>
+<!-- File Upload Button (Hidden) -->
+<input type="file" id="uploadInput" webkitdirectory directory multiple style="display:none;">
 
 <div class="button-container">
   <button onclick="prevTrack()">❮</button>
   <button id="shuffleBtn" onclick="shuffleTracks()">Shuffle: Off</button>
   <button id="playPauseBtn" onclick="togglePlayPause()">▷</button>
+  <button id="scanServerBtn" style="margin-top:10px;">Scan</button>
   <button id="loopBtn" onclick="toggleLoop()">Loop: Off</button>
   <button onclick="nextTrack()">❯</button>
 </div>
-
-
 
 <!-- Footer -->
 <footer class="site-footer">
@@ -139,7 +221,6 @@ button:hover {
 </footer>
 
 
-
 <script>
   const uploadInput = document.getElementById('uploadInput');
   const dropArea = document.getElementById('dropArea');
@@ -148,11 +229,14 @@ button:hover {
   const playPauseBtn = document.getElementById('playPauseBtn');
   const shuffleBtn = document.getElementById('shuffleBtn');
   const loopBtn = document.getElementById('loopBtn');
+  const scanServerBtn = document.getElementById('scanServerBtn');
 
   let tracks = [];
+  let originalOrder = [];      // used to restore order after shuffling (server tracks)
   let currentIndex = 0;
   let isLooping = false;
   let isShuffled = false;
+  let sourceType = 'local';   // 'local' or 'server'
 
   dropArea.addEventListener('click', () => {
     uploadInput.click();
@@ -200,7 +284,7 @@ function processFiles(files) {
         return imgKey === audioKey;
       });
 
-      return { audio, image, sortKey: audioKey };
+      return { audio, image, sortKey: audioKey, type: 'local' };
     })
     // Remove any audio without matching image
     .filter(track => track.image)
@@ -213,6 +297,8 @@ function processFiles(files) {
     });
 
   if (tracks.length > 0) {
+    sourceType = 'local';
+    originalOrder = [...tracks];
     currentIndex = 0;
     loadTrack(currentIndex);
   } else {
@@ -223,16 +309,19 @@ function processFiles(files) {
 
   function loadTrack(index) {
     const track = tracks[index];
-    if (track) {
+    if (!track) return;
+
+    // Local file (blob) or server URL?
+    if (track.type === 'server') {
+      audioPlayer.src = track.audioUrl;
+      coverImage.src = track.imageUrl;
+    } else {
       audioPlayer.src = URL.createObjectURL(track.audio);
-      audioPlayer.play();
-      playPauseBtn.textContent = '∥';
-      if (track.image) {
-        coverImage.src = URL.createObjectURL(track.image);
-      } else {
-        coverImage.src = '';
-      }
+      coverImage.src = URL.createObjectURL(track.image);
     }
+
+    audioPlayer.play().catch(() => {}); // play if allowed
+    playPauseBtn.textContent = '∥';
   }
 
   audioPlayer.addEventListener('ended', () => {
@@ -254,15 +343,27 @@ function processFiles(files) {
   }
 
   function shuffleTracks() {
+    if (tracks.length === 0) return;
     isShuffled = !isShuffled;
     if (isShuffled) {
-      tracks = tracks.sort(() => Math.random() - 0.5);
+      // Shuffle a copy of the current track array
+      for (let i = tracks.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
+      }
       shuffleBtn.textContent = "Shuffle: On";
     } else {
-      tracks = tracks.sort((a, b) => a.audio.name.localeCompare(b.audio.name, undefined, { numeric: true }));
+      // Restore original order
+      if (originalOrder.length > 0) {
+        tracks = [...originalOrder];
+      } else {
+        // Fallback for local files: sort by filename
+        tracks.sort((a, b) => (a.sortKey || a.audio?.name || '').localeCompare(b.sortKey || b.audio?.name || '', undefined, { numeric: true }));
+      }
       shuffleBtn.textContent = "Shuffle: Off";
     }
-    loadTrack(0);
+    currentIndex = 0;
+    loadTrack(currentIndex);
   }
 
   function toggleLoop() {
@@ -280,6 +381,40 @@ function processFiles(files) {
       playPauseBtn.textContent = '▷';
     }
   }
+
+  // --- Server folder scanning ---
+  scanServerBtn.addEventListener('click', () => {
+    fetch('?scan=1')
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+        if (!Array.isArray(data) || data.length === 0) {
+          alert("No audio/image pairs found on the server.");
+          return;
+        }
+
+        // Transform server response to our track format
+        tracks = data.map(item => ({
+          audioUrl: item.audio,
+          imageUrl: item.image,
+          sortKey: item.key,
+          type: 'server'
+        }));
+
+        sourceType = 'server';
+        originalOrder = [...tracks];   // save original sorted order
+        isShuffled = false;
+        shuffleBtn.textContent = "Shuffle: Off";
+        currentIndex = 0;
+        loadTrack(currentIndex);
+      })
+      .catch(err => {
+        alert("Error scanning server folder: " + err.message);
+      });
+  });
 </script>
 
 	

@@ -1,1 +1,0 @@
-https://readallcomics.com/?story=${encodeURIComponent(query)}&s=&type=comic

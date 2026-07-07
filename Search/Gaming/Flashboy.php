@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
 
 <?php
 $folder = __DIR__ . '/flashboy';
@@ -46,6 +50,37 @@ button:hover {
     box-shadow: 0 0 20px #0ff, 0 0 60px #0ff inset;
 }
 
+/* New search box styling */
+#searchBox {
+    width: 300px;
+    padding: 12px 20px;
+    font-size: 1em;
+    background: #111;
+    border: 2px solid #0ff6;
+    border-radius: 25px;
+    color: #0ff;
+    outline: none;
+    transition: 0.3s;
+    box-shadow: 0 0 15px #0ff3;
+    margin-bottom: 15px;
+    
+}
+#searchBox::placeholder {
+    color: #0ff8;
+}
+#searchBox:focus {
+    border-color: #0ff;
+    box-shadow: 0 0 25px #0ff, 0 0 50px #0ff inset;
+}
+
+#noResults {
+    color: #f0f;
+    text-align: center;
+    font-size: 1.1em;
+    display: none; /* hidden by default */
+    margin: 10px 0;
+}
+
 #gameList {
     display: none;
     flex-direction: column;
@@ -54,6 +89,7 @@ button:hover {
     overflow-y: auto;
     color: #0ff;
     width: 300px;
+    
 }
 .game-item {
     background: #111;
@@ -130,10 +166,20 @@ ruffle-player {
 <body>
 
 <h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
+
+
+
+<!-- Search box added here -->
+<input type="text" id="searchBox" placeholder="🔍 Search games..." autocomplete="off">
+
+
+
 <div class="buttons">
     <button id="showGamesBtn">Show Games</button>
     <button id="loadGameBtn">Load Game</button>
 </div>
+
+
 
 <div id="gameList">
 <?php
@@ -146,6 +192,7 @@ if(empty($files)){
     }
 }
 ?>
+    <p id="noResults">No games found</p>
 </div>
 
 <div id="overlay">
@@ -186,6 +233,11 @@ const fullBtn = document.getElementById('fullBtn');
 const filePicker = document.getElementById('filePicker');
 const playerContainer = document.getElementById('player-container');
 
+// Search elements
+const searchBox = document.getElementById('searchBox');
+const noResults = document.getElementById('noResults');
+const gameItems = document.querySelectorAll('.game-item');
+
 showBtn.onclick = () => {
     gameList.style.display = gameList.style.display==='flex'?'none':'flex';
 };
@@ -222,12 +274,30 @@ function openGame(src){
     player.id = 'player';
     player.load(src);
 }
+
+// --- Search functionality ---
+searchBox.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    let visibleCount = 0;
+    
+    gameItems.forEach(item => {
+        const title = item.textContent.toLowerCase();
+        if (title.includes(query)) {
+            item.style.display = '';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Show "no results" if no items visible and query not empty
+    if (visibleCount === 0 && query.length > 0) {
+        noResults.style.display = 'block';
+    } else {
+        noResults.style.display = 'none';
+    }
+});
 </script>
-
-
-
-
-
 
 </body>
 </html>

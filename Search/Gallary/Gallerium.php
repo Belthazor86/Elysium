@@ -1,5 +1,24 @@
 <?php
-$comicFolder = 'Gallerium'; // Main folder containing game folders
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+
+<?php
+$comicFolder = 'Gallerium'; // Main folder containing category folders
+
+function get_images_from_subfolder($subfolderPath) {
+    $images = [];
+    if (!is_dir($subfolderPath)) return $images;
+    $files = scandir($subfolderPath);
+    foreach ($files as $file) {
+        if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file)) {
+            $images[] = $subfolderPath . '/' . $file;
+        }
+    }
+    sort($images, SORT_NATURAL);
+    return $images;
+}
 
 function search_comics($query, $all = false) {
     global $comicFolder;
@@ -9,36 +28,36 @@ function search_comics($query, $all = false) {
 
     if (!is_dir($rootDir)) return $results;
 
-    foreach (glob($rootDir . '/*') as $folderPath) {
-        if (!is_dir($folderPath)) continue;
-        $folderName = basename($folderPath);
+    $categories = array_filter(glob($rootDir . '/*', GLOB_ONLYDIR), 'is_dir');
+    $categories = array_map('basename', $categories);
 
-        // If 'all' is true, we skip the name check
-        if (!$all && stripos($folderName, $q) === false) continue;
+    foreach ($categories as $cat) {
+        $catPath = $rootDir . '/' . $cat;
+        foreach (glob($catPath . '/*', GLOB_ONLYDIR) as $itemPath) {
+            $itemName = basename($itemPath);
+            if (!$all && stripos($itemName, $q) === false) continue;
 
-        $postersPath = $folderPath . '/posters';
-        if (!is_dir($postersPath)) continue;
+            foreach (scandir($itemPath) as $sub) {
+                if ($sub === '.' || $sub === '..') continue;
+                $subPath = $itemPath . '/' . $sub;
+                if (!is_dir($subPath)) continue;
 
-        $files = array_filter(scandir($postersPath), function($f) {
-            return preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $f);
-        });
+                $images = get_images_from_subfolder($subPath);
+                if (empty($images)) continue;
 
-        usort($files, function($a, $b) {
-            preg_match('/^(\d+)/', $a, $matchesA);
-            preg_match('/^(\d+)/', $b, $matchesB);
-            $numA = isset($matchesA[1]) ? intval($matchesA[1]) : 0;
-            $numB = isset($matchesB[1]) ? intval($matchesB[1]) : 0;
-            return $numA <=> $numB;
-        });
-
-        foreach ($files as $file) {
-            $results[] = "$comicFolder/$folderName/posters/$file";
+                $cover = $images[0];
+                $coverRelative = str_replace(__DIR__ . '/', '', $cover);
+                $results[] = [
+                    'cover' => $coverRelative,
+                    'subfolder' => "$comicFolder/$cat/$itemName/$sub"
+                ];
+            }
         }
     }
     return $results;
 }
 
-// Updated AJAX to handle preview
+// AJAX endpoints
 if (isset($_GET['ajax'])) {
     if (isset($_GET['q'])) {
         header('Content-Type: application/json');
@@ -48,27 +67,53 @@ if (isset($_GET['ajax'])) {
         header('Content-Type: application/json');
         echo json_encode(search_comics('', true));
         exit;
-    }
-}
-
-// Return images for a specific wallpapers folder
-if (isset($_GET['ajax']) && $_GET['ajax'] === 'images' && isset($_GET['folder'])) {
-    $folder = __DIR__ . '/' . $_GET['folder'];
-    $images = [];
-    if (is_dir($folder)) {
-        foreach (scandir($folder) as $file) {
-            if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $file)) {
-                $images[] = $_GET['folder'] . '/' . $file; 
+    } elseif ($_GET['ajax'] === 'subfolderImages' && isset($_GET['subfolder'])) {
+        $subfolderPath = __DIR__ . '/' . $_GET['subfolder'];
+        $images = get_images_from_subfolder($subfolderPath);
+        $relativeImages = array_map(function($img) {
+            return str_replace(__DIR__ . '/', '', $img);
+        }, $images);
+        header('Content-Type: application/json');
+        echo json_encode($relativeImages);
+        exit;
+    } elseif ($_GET['ajax'] === 'category' && isset($_GET['cat'])) {
+        $cat = $_GET['cat'];
+        $catPath = __DIR__ . '/' . $comicFolder . '/' . $cat;
+        if (!is_dir($catPath)) {
+            echo json_encode([]);
+            exit;
+        }
+        $results = [];
+        foreach (glob($catPath . '/*', GLOB_ONLYDIR) as $itemPath) {
+            $itemName = basename($itemPath);
+            foreach (scandir($itemPath) as $sub) {
+                if ($sub === '.' || $sub === '..') continue;
+                $subPath = $itemPath . '/' . $sub;
+                if (!is_dir($subPath)) continue;
+                $images = get_images_from_subfolder($subPath);
+                if (empty($images)) continue;
+                $cover = $images[0];
+                $coverRelative = str_replace(__DIR__ . '/', '', $cover);
+                $results[] = [
+                    'cover' => $coverRelative,
+                    'subfolder' => "$comicFolder/$cat/$itemName/$sub"
+                ];
             }
         }
-        sort($images, SORT_NATURAL);
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
     }
-    header('Content-Type: application/json');
-    echo json_encode($images);
-    exit;
+}
+
+// Dynamically get category folder names for the buttons
+$rootDir = __DIR__ . '/' . $comicFolder;
+$categoryFolders = [];
+if (is_dir($rootDir)) {
+    $allDirs = glob($rootDir . '/*', GLOB_ONLYDIR);
+    $categoryFolders = array_map('basename', $allDirs);
 }
 ?>
-
 <!doctype html>
 <html>
 <head>
@@ -83,18 +128,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'images' && isset($_GET['folder'])
 <title>Gallerium</title>
 </head> 
 <style>
-
 body {
   margin: 0;
   padding: 20px;
   overflow:scroll;
 }
-
 .search-box {
   text-align: center;
   margin-bottom: 30px;
 }
-
 input[type="text"] {
   width: 300px;
   padding: 12px;
@@ -105,7 +147,6 @@ input[type="text"] {
   color: #fff;
   box-shadow: 0 0 6px #00aaffaa;
 }
-
 button {
   margin-left: 10px;
   padding: 12px 20px;
@@ -117,14 +158,12 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
-
 #results {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
 }
-
 .thumb {
   width: 180px;
   border: 2px solid #333;
@@ -132,12 +171,10 @@ button {
   cursor: pointer;
   transition: transform 0.2s;
 }
-
 .thumb:hover {
   transform: scale(1.1);
   border-color: crimson;
 }
-
 /* Overlay styling */
 .overlay {
   position: fixed;
@@ -150,7 +187,6 @@ button {
   align-items: center;
   z-index: 9999;
 }
-
 .overlay img {
   display: block;
   width: 100%;
@@ -163,12 +199,10 @@ button {
   border-radius: 15px;
   box-shadow: 0 0 40px #00ffc3;
 }
-
 .overlay.zoomed img {
   transform: scale(2);
   cursor: zoom-out;
 }
-
 .close-btn, .fullscreen-btn {
   position: absolute;
   top: 15px;
@@ -197,20 +231,67 @@ button {
   color: #00a07a;
   background-color: rgba(0, 255, 195, 0.2);
 }
-                  
+
+.buttons {
+  margin-top: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.buttons button {
+  background: #111;
+  border: 2px solid #00aaff;
+  color: #00aaff;
+  padding: 10px 18px;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.buttons button:hover {
+  background-color: #00aaff;
+  color: #000;
+}
+.buttons button.active {
+  background-color: #00aaff;
+  color: #000;
+  box-shadow: 0 0 15px #00aaffbb;
+}
+.video-slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  font-size: 30px;
+  padding: 10px 20px;
+  cursor: pointer;
+  z-index: 10001;
+  border-radius: 8px;
+}
+.video-slider-btn.left-side { left: 20px; }
+.video-slider-btn.right-side { right: 20px; }
 </style>
 
- 
-<body>
 
+<body>
 
 <h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
 
-
 <div class="search-box">
   <input type="text" id="searchInput" placeholder="Search..." autocomplete="off" />
-  <button onclick="doSearch()">Search</button>
-  <button onclick="doPreview()" style="background-color: #ff0055; color: #fff;">Preview All</button>
+  <button onclick="doPreview()">All</button>
+</div>
+
+<div class="buttons">
+  <?php foreach ($categoryFolders as $folder): ?>
+    <button onclick="loadCategory('<?php echo htmlspecialchars($folder); ?>')">
+      <?php echo htmlspecialchars($folder); ?>
+    </button>
+  <?php endforeach; ?>
 </div>
 
 <div id="results"></div>
@@ -222,8 +303,6 @@ button {
   <button class="video-slider-btn right-side" onclick="showNextImage()">❯</button>
 </div>
 
-
-<!-- Footer -->
 <footer class="site-footer">
   <div class="footer-content">
     <p class="footer-main">
@@ -235,11 +314,10 @@ button {
   </div>
 </footer>
 
-
 <script>
-
-let currentImages = []; // array of images for slideshow
-let currentIndex = 0;   // current image index
+let currentImages = [];
+let currentIndex = 0;
+let debounceTimer;
 
 function renderResults(data) {
   const results = document.getElementById("results");
@@ -250,23 +328,37 @@ function renderResults(data) {
     return;
   }
 
-  data.forEach(imagePath => {
-      const img = document.createElement('img');
-      img.src = imagePath;
-      img.className = 'thumb';
-      img.onclick = () => openSlideshow(imagePath);
-      results.appendChild(img);
+  data.forEach(item => {
+    const img = document.createElement('img');
+    img.src = item.cover;
+    img.className = 'thumb';
+    img.onclick = () => openSlideshow(item.subfolder);
+    results.appendChild(img);
   });
 }
 
-function doSearch() {
-  const q = document.getElementById("searchInput").value.trim();
-  if (!q) return alert("Enter a keyword to search.");
-
-  fetch(`?ajax=1&q=${encodeURIComponent(q)}`)
-    .then(r => r.json())
-    .then(data => renderResults(data));
-}
+// Live search as you type (debounced to avoid excessive requests)
+document.getElementById("searchInput").addEventListener("input", function() {
+  const query = this.value.trim();
+  clearTimeout(debounceTimer);
+  
+  if (query === '') {
+    // Clear results when search box is empty
+    document.getElementById("results").innerHTML = '';
+    return;
+  }
+  
+  // Wait 300ms after user stops typing before fetching
+  debounceTimer = setTimeout(() => {
+    fetch(`?ajax=1&q=${encodeURIComponent(query)}`)
+      .then(r => r.json())
+      .then(data => renderResults(data))
+      .catch(err => {
+        console.error(err);
+        document.getElementById("results").innerHTML = "<p style='text-align:center;'>Error loading results.</p>";
+      });
+  }, 300);
+});
 
 function doPreview() {
   fetch(`?ajax=1&preview=1`)
@@ -274,30 +366,23 @@ function doPreview() {
     .then(data => renderResults(data));
 }
 
-// Open slideshow for wallpapers corresponding to clicked poster
-function openSlideshow(imagePath) {
-  const pathParts = imagePath.split('/'); // Gallerium/GameName/posters/1.jpg
-  const gameFolder = pathParts[1];           // GameName
-  const fileName = pathParts[3];             // 1.jpg
-  const folderNum = fileName.split('.')[0];   // 1
-  const wallpapersPath = `Gallerium/${gameFolder}/wallpapers/${folderNum}/`;
-
-  fetchImages(wallpapersPath).then(images => {
-    if (!images.length) return alert("No wallpapers found for this cover.");
-    currentImages = images;
-    currentIndex = 0;
-    showOverlayImage(currentImages[currentIndex]);
-  });
-}
-
-// Fetch all images from a wallpapers folder
-function fetchImages(folderPath) {
-  return fetch(`?ajax=images&folder=${encodeURIComponent(folderPath)}`)
+function loadCategory(cat) {
+  fetch(`?ajax=category&cat=${encodeURIComponent(cat)}`)
     .then(r => r.json())
-    .catch(() => []);
+    .then(data => renderResults(data));
 }
 
-// Show image in overlay
+function openSlideshow(subfolderPath) {
+  fetch(`?ajax=subfolderImages&subfolder=${encodeURIComponent(subfolderPath)}`)
+    .then(r => r.json())
+    .then(images => {
+      if (!images.length) return alert("No images found in this folder.");
+      currentImages = images;
+      currentIndex = 0;
+      showOverlayImage(currentImages[currentIndex]);
+    });
+}
+
 function showOverlayImage(src) {
   const overlay = document.getElementById("overlay");
   const overlayImg = document.getElementById("overlayImg");
@@ -307,7 +392,6 @@ function showOverlayImage(src) {
   overlay.style.display = 'flex';
 }
 
-// Manual slideshow buttons
 function showNextImage() {
   if (!currentImages.length) return;
   currentIndex = (currentIndex + 1) % currentImages.length;
@@ -320,7 +404,6 @@ function showPreviousImage() {
   showOverlayImage(currentImages[currentIndex]);
 }
 
-// Close overlay
 function closeOverlay() {
   const overlay = document.getElementById("overlay");
   overlay.style.display = 'none';
@@ -328,11 +411,10 @@ function closeOverlay() {
   overlay.classList.remove("zoomed");
 }
 
-// Zoom functionality on click
-document.getElementById("overlayImg").onclick = function (e) {
+// Zoom on click
+document.getElementById("overlayImg").onclick = function(e) {
   const overlay = document.getElementById("overlay");
   const img = e.target;
-
   if (overlay.classList.contains("zoomed")) {
     overlay.classList.remove("zoomed");
     img.style.transformOrigin = 'center center';
@@ -345,24 +427,10 @@ document.getElementById("overlayImg").onclick = function (e) {
   }
 };
 
+// Close when clicking outside image
 document.getElementById('overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeOverlay();
 });
 </script>
-
-
-<script>
-
-function toggleFullscreen() {
-  const elem = document.getElementById('overlay');
-  if (!document.fullscreenElement) {
-    elem.requestFullscreen?.() || elem.webkitRequestFullscreen?.() || elem.mozRequestFullScreen?.() || elem.msRequestFullscreen?.();
-  } else {
-    document.exitFullscreen?.();
-  }
-}
-
-</script>
-
 </body>
 </html>

@@ -1,5 +1,24 @@
 <?php
-$comicFolder = 'Imagen'; 
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
+
+
+<?php
+$comicFolder = 'Imagen'; // Main folder containing category folders
+
+function get_images_from_subfolder($subfolderPath) {
+    $images = [];
+    if (!is_dir($subfolderPath)) return $images;
+    $files = scandir($subfolderPath);
+    foreach ($files as $file) {
+        if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file)) {
+            $images[] = $subfolderPath . '/' . $file;
+        }
+    }
+    sort($images, SORT_NATURAL);
+    return $images;
+}
 
 function search_comics($query, $all = false) {
     global $comicFolder;
@@ -9,63 +28,89 @@ function search_comics($query, $all = false) {
 
     if (!is_dir($rootDir)) return $results;
 
-    foreach (glob($rootDir . '/*') as $folderPath) {
-        if (!is_dir($folderPath)) continue;
-        $folderName = basename($folderPath);
+    // Dynamically scan category folders
+    $categories = array_filter(glob($rootDir . '/*', GLOB_ONLYDIR), 'is_dir');
+    $categories = array_map('basename', $categories);
 
-        if (!$all && stripos($folderName, $q) === false) continue;
+    foreach ($categories as $cat) {
+        $catPath = $rootDir . '/' . $cat;
+        foreach (glob($catPath . '/*', GLOB_ONLYDIR) as $itemPath) {
+            $itemName = basename($itemPath);
+            if (!$all && stripos($itemName, $q) === false) continue;
 
-        $postersPath = $folderPath . '/posters';
-        if (!is_dir($postersPath)) continue;
+            foreach (scandir($itemPath) as $sub) {
+                if ($sub === '.' || $sub === '..') continue;
+                $subPath = $itemPath . '/' . $sub;
+                if (!is_dir($subPath)) continue;
 
-        $files = array_filter(scandir($postersPath), function($f) {
-            return preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $f);
-        });
+                $images = get_images_from_subfolder($subPath);
+                if (empty($images)) continue;
 
-        usort($files, function($a, $b) {
-            preg_match('/^(\d+)/', $a, $matchesA);
-            preg_match('/^(\d+)/', $b, $matchesB);
-            $numA = isset($matchesA[1]) ? intval($matchesA[1]) : 0;
-            $numB = isset($matchesB[1]) ? intval($matchesB[1]) : 0;
-            return $numA <=> $numB;
-        });
-
-        foreach ($files as $file) {
-            $results[] = "$comicFolder/$folderName/posters/$file";
+                $cover = $images[0];
+                $coverRelative = str_replace(__DIR__ . '/', '', $cover);
+                $results[] = [
+                    'cover' => $coverRelative,
+                    'subfolder' => "$comicFolder/$cat/$itemName/$sub"
+                ];
+            }
         }
     }
     return $results;
 }
 
+// AJAX endpoints
 if (isset($_GET['ajax'])) {
-    if (isset($_GET['q'])) {
-        header('Content-Type: application/json');
-        echo json_encode(search_comics($_GET['q']));
-        exit;
-    } elseif (isset($_GET['preview'])) {
+    if (isset($_GET['preview'])) {
         header('Content-Type: application/json');
         echo json_encode(search_comics('', true));
         exit;
-    }
-}
-
-if (isset($_GET['ajax']) && $_GET['ajax'] === 'images' && isset($_GET['folder'])) {
-    $folder = __DIR__ . '/' . $_GET['folder'];
-    $files = [];
-    if (is_dir($folder)) {
-        foreach (scandir($folder) as $file) {
-            if (preg_match('/\.(jpg|jpeg|png|webp|gif)$/i', $file)) {
-                $files[] = $_GET['folder'] . '/' . $file;
+    } elseif ($_GET['ajax'] === 'subfolderImages' && isset($_GET['subfolder'])) {
+        $subfolderPath = __DIR__ . '/' . $_GET['subfolder'];
+        $images = get_images_from_subfolder($subfolderPath);
+        $relativeImages = array_map(function($img) {
+            return str_replace(__DIR__ . '/', '', $img);
+        }, $images);
+        header('Content-Type: application/json');
+        echo json_encode($relativeImages);
+        exit;
+    } elseif ($_GET['ajax'] === 'category' && isset($_GET['cat'])) {
+        $cat = $_GET['cat'];
+        $catPath = __DIR__ . '/' . $comicFolder . '/' . $cat;
+        if (!is_dir($catPath)) {
+            echo json_encode([]);
+            exit;
+        }
+        $results = [];
+        foreach (glob($catPath . '/*', GLOB_ONLYDIR) as $itemPath) {
+            $itemName = basename($itemPath);
+            foreach (scandir($itemPath) as $sub) {
+                if ($sub === '.' || $sub === '..') continue;
+                $subPath = $itemPath . '/' . $sub;
+                if (!is_dir($subPath)) continue;
+                $images = get_images_from_subfolder($subPath);
+                if (empty($images)) continue;
+                $cover = $images[0];
+                $coverRelative = str_replace(__DIR__ . '/', '', $cover);
+                $results[] = [
+                    'cover' => $coverRelative,
+                    'subfolder' => "$comicFolder/$cat/$itemName/$sub"
+                ];
             }
         }
-        sort($files, SORT_NATURAL);
+        header('Content-Type: application/json');
+        echo json_encode($results);
+        exit;
     }
-    header('Content-Type: application/json');
-    echo json_encode($files);
-    exit;
+}
+
+// Dynamically get category folder names for the buttons
+$rootDir = __DIR__ . '/' . $comicFolder;
+$categoryFolders = [];
+if (is_dir($rootDir)) {
+    $allDirs = glob($rootDir . '/*', GLOB_ONLYDIR);
+    $categoryFolders = array_map('basename', $allDirs);
 }
 ?>
-
 <!doctype html>
 <html>
 <head>
@@ -181,17 +226,71 @@ button {
 }
 .close-btn { right: 20px; }
 .fullscreen-btn { right: 90px; }
+
+.buttons {
+  margin-top: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.buttons button {
+  background: #111;
+  border: 2px solid #00aaff;
+  color: #00aaff;
+  padding: 10px 18px;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.buttons button:hover {
+  background-color: #00aaff;
+  color: #000;
+}
+.buttons button.active {
+  background-color: #00aaff;
+  color: #000;
+  box-shadow: 0 0 15px #00aaffbb;
+}
+
+.video-slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  font-size: 30px;
+  padding: 10px 20px;
+  cursor: pointer;
+  z-index: 10001;
+  border-radius: 8px;
+}
+.video-slider-btn.left-side { left: 20px; }
+.video-slider-btn.right-side { right: 20px; }
 </style>
 
 <body>
 
 <h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
 
+
 <div class="search-box">
-  <input type="text" id="searchInput" placeholder="Search..." autocomplete="off" />
-  <button onclick="doSearch()">Search</button>
-  <button onclick="doPreview()" style="background-color: #ff0055; color: #fff;">Preview All</button>
+  <input type="text" id="searchInput" placeholder="Filter results..." autocomplete="off" />
+  <button onclick="doPreview()">All</button>
 </div>
+
+
+<div class="buttons">
+  <?php foreach ($categoryFolders as $folder): ?>
+    <button onclick="loadCategory('<?php echo htmlspecialchars($folder); ?>')">
+      <?php echo htmlspecialchars($folder); ?>
+    </button>
+  <?php endforeach; ?>
+</div>
+
 
 <div id="results"></div>
 
@@ -202,8 +301,6 @@ button {
   <button class="video-slider-btn right-side" onclick="showNextImage()">❯</button>
 </div>
 
-
-<!-- Footer -->
 <footer class="site-footer">
   <div class="footer-content">
     <p class="footer-main">
@@ -215,8 +312,6 @@ button {
   </div>
 </footer>
 
-
-
 <script>
 let currentImages = [];
 let currentIndex = 0;
@@ -224,35 +319,47 @@ let currentIndex = 0;
 function renderResults(data) {
   const results = document.getElementById("results");
   results.innerHTML = '';
-  data.forEach(imagePath => {
+  if (!data.length) {
+    results.innerHTML = "<p style='text-align:center;'>No items found.</p>";
+    return;
+  }
+  data.forEach(item => {
     const img = document.createElement('img');
-    img.src = imagePath;
+    img.src = item.cover;
     img.className = 'thumb';
-    img.onclick = () => openSlideshow(imagePath);
+    img.setAttribute('data-subfolder', item.subfolder); // needed for filtering
+    img.onclick = () => openSlideshow(item.subfolder);
     results.appendChild(img);
   });
 }
 
-function doSearch() {
-  const q = document.getElementById("searchInput").value.trim();
-  if (!q) return;
-  fetch(`?ajax=1&q=${encodeURIComponent(q)}`).then(r => r.json()).then(data => renderResults(data));
+// Client‑side filtering – show/hide thumbnails as you type
+document.getElementById("searchInput").addEventListener("input", function() {
+  const query = this.value.trim().toLowerCase();
+  const thumbnails = document.querySelectorAll("#results .thumb");
+  thumbnails.forEach(img => {
+    const subfolder = img.getAttribute('data-subfolder') || '';
+    img.style.display = (query === '' || subfolder.toLowerCase().includes(query)) ? '' : 'none';
+  });
+});
+
+function loadCategory(cat) {
+  fetch(`?ajax=category&cat=${encodeURIComponent(cat)}`)
+    .then(r => r.json())
+    .then(data => renderResults(data));
 }
 
 function doPreview() {
-  fetch(`?ajax=1&preview=1`).then(r => r.json()).then(data => renderResults(data));
+  fetch(`?ajax=1&preview=1`)
+    .then(r => r.json())
+    .then(data => renderResults(data));
 }
 
-function openSlideshow(imagePath) {
-  const parts = imagePath.split('/');
-  const gameFolder = parts[1];
-  const imgFile = parts[3];
-  const folderNum = imgFile.split('.')[0];
-  const wallpapersPath = `${parts[0]}/${gameFolder}/wallpapers/${folderNum}/`;
-
-  fetch(`?ajax=images&folder=${encodeURIComponent(wallpapersPath)}`)
+function openSlideshow(subfolderPath) {
+  fetch(`?ajax=subfolderImages&subfolder=${encodeURIComponent(subfolderPath)}`)
     .then(r => r.json())
     .then(images => {
+      if (!images.length) return alert("No images found.");
       currentImages = images;
       currentIndex = 0;
       showOverlayImage(currentImages[currentIndex]);

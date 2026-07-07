@@ -1,5 +1,7 @@
-
-
+<?php
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../security.php';
+?>
 
 <?php
 $folder = __DIR__ . '/Web U';
@@ -148,12 +150,50 @@ iframe {
 #gameList::-webkit-scrollbar{width:8px;}
 #gameList::-webkit-scrollbar-thumb{background:#c200ff3;border-radius:5px;}
 
+#searchBox {
+    width: auto;
+    padding: 10px;
+    margin-bottom: 30px;
+    background: #111;
+    border: 2px solid #c200ff;
+    color: #c200ff;
+    border-radius: 8px;
+    font-size: 1em;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box;
+}
+
+#searchBox:focus {
+    box-shadow: 0 0 15px #c200ff;
+    border-color: #c200ff;
+}
+
+#searchBox::placeholder {
+    color: #c200ff88;
+}
+
+.game-item.hidden {
+    display: none;
+}
+
+#noResults {
+    color: #c200ff88;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    display: none;
+}
+
 
 </style>
 </head>
 <body>
 
 <h2><?php echo pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME); ?></h2>
+
+    <input type="text" id="searchBox" placeholder="🔍 Search games..." autocomplete="off">
+    <p id="noResults">No games found</p>
 
 <div class="buttons">
     <button id="showGamesBtn">Show Games</button>
@@ -223,6 +263,50 @@ function openGame(src){
     player.src = src;
     overlay.style.display = 'flex';
 }
+
+const searchBox = document.getElementById('searchBox');
+const noResults = document.getElementById('noResults');
+
+// Update the showBtn click handler
+showBtn.onclick = () => { 
+    gameList.style.display = gameList.style.display==='flex'?'none':'flex'; 
+    if(gameList.style.display === 'flex') {
+        searchBox.value = '';
+        filterGames('');
+        searchBox.focus();
+    }
+};
+
+// Add search event listener
+searchBox.addEventListener('input', (e) => {
+    filterGames(e.target.value);
+});
+
+// Add filter function
+function filterGames(query) {
+    const gameItems = document.querySelectorAll('.game-item');
+    let visibleCount = 0;
+    
+    gameItems.forEach(item => {
+        const gameName = item.textContent.toLowerCase();
+        if(gameName.includes(query.toLowerCase())) {
+            item.classList.remove('hidden');
+            visibleCount++;
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+    
+    if(visibleCount === 0 && query !== '') {
+        noResults.style.display = 'block';
+    } else {
+        noResults.style.display = 'none';
+    }
+}
+
+
+
+
 </script>
 
 

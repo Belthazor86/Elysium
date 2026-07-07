@@ -1,1 +1,0 @@
-https://www.goodreads.com/search?q=${encodeURIComponent(query)}

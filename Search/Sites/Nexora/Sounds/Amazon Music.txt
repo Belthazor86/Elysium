@@ -1,1 +1,0 @@
-https://music.amazon.com/search/${encodeURIComponent(query)}?filter=IsLibrary%7Cfalse&sc=none
