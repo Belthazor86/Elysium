@@ -3,9 +3,10 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/security.php';
 ?>
 
+
 <?php 
-// 1. Include the pure processing script at the very top of your index.php
 require_once __DIR__ . '/updates.php'; 
+$apps = get_app_updates(); // Explicitly call the function
 ?>
 
 <div class="dashboard-updater">
