@@ -3,6 +3,26 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/security.php';
 ?>
 
+<?php 
+// 1. Include the pure processing script at the very top of your index.php
+require_once __DIR__ . '/updates.php'; 
+?>
+
+<div class="dashboard-updater">
+    <?php foreach ($apps as $app): ?>
+        <div class="app-status-row">
+            <span><?php echo htmlspecialchars($app['name']); ?> (v<?php echo htmlspecialchars($app['version']); ?>)</span>
+            <?php if ($app['status'] === 'need_update'): ?>
+                <a href="<?php echo htmlspecialchars($app['url']); ?>" class="update-btn" style="color: red; font-weight: bold;">
+                    Download v<?php echo htmlspecialchars($app['latest']); ?> ZIP
+                </a>
+            <?php else: ?>
+                <span style="color: green;">Up to date</span>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+</div>
+
 
 <?php
 // --- AJAX Handler: Fetches files from the folders ---
