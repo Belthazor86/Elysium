@@ -3,27 +3,6 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/security.php';
 ?>
 
-<?php 
-require_once __DIR__ . '/updates.php'; 
-$apps = get_app_updates(); // Explicitly call the function
-?>
-
-<div class="dashboard-updater">
-    <?php foreach ($apps as $app): ?>
-        <div class="app-status-row">
-            <span><?php echo htmlspecialchars($app['name']); ?> (v<?php echo htmlspecialchars($app['version']); ?>)</span>
-            <?php if ($app['status'] === 'need_update'): ?>
-                <a href="<?php echo htmlspecialchars($app['url']); ?>" class="update-btn" style="color: red; font-weight: bold;">
-                    Download v<?php echo htmlspecialchars($app['latest']); ?> ZIP
-                </a>
-            <?php else: ?>
-                <span style="color: green;">Up to date</span>
-            <?php endif; ?>
-        </div>
-    <?php endforeach; ?>
-</div>
-
-
 <?php
 // --- AJAX Handler: Fetches files from the folders ---
 if (isset($_GET['ajax_folder'])) {
