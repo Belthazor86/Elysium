@@ -14,12 +14,13 @@ Elysium is a plug-and-play web app platform built with HTML and PHP. It allows u
 The platform is organized into the following directory structure:
 
 + **CSS:** Contains stylesheets for colors, layout, and visual design.
-+ **Files:** Stores user media like PDFs, images, and audio.
 + **Fonts:** Main typography files for the dashboard.
 + **Images:** Interface wallpapers.
 + **Logos:** Main Elysium branding assets.
-+ **Messages:** Text snippets for Elysium, Valhalla, and Yggdrasil pages.
++ **Messages:** Text snippets for Elysium and Yggdrasil pages.
 + **Search:** The core directory. This is where all web apps live, organized by category.
++ **Config:** Stores the absolute path to the project's root folder
++ **Security:** Protects against path traversal, XSS, and malicious file access
 + **Index.php:** The main entry point to launch the dashboard.
 
 **Installation & Setup**
@@ -27,25 +28,24 @@ The platform is organized into the following directory structure:
 Follow these steps to get your local instance running:
 
 1. **Download:** Download the Elysium Project files.
-2. **Setup a local server:** Install XAMPP, WAMP, or Laragon.
+2. **Setup a local server:** Download and install XAMPP, WAMP, or Laragon. (For USB use, grab the portable version.).
 3. **Deploy:** Extract the project and place the folder into your server's htdocs (or equivalent) directory
-4. **Rename (Optional):** Rename the "Elysium" folder name to anything you prefer.
-5. **Change (Optional):** Change the "Elysium" logo to your own. 
-6. **Launch:** Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
+4. **Launch:** Open your browser and navigate to the index page (e.g., localhost/Elysium/index.php).
 
 **Included Web Apps**
 
 Elysium comes pre-loaded with a variety of apps. You can add more by placing them in the appropriate category within the /Search folder.
 
++ **Apps:** AppBarn, Webology, Yggdrasil
 + **Audio:** Aurora, Soundify, Storyboard, Themata, Wavora.
 + **Gaming:** Flashbot, Flashboy, Web U.
 + **Books & Comics:** Fumetti, Graphique, Novella, Scribe.
 + **Gallary:** Boardify, Figura, Gallerium, Imagen.
 + **Music:** Andromeda, Moodify, Musica, Pandora, Sahara, Serenade.
-+ **Online:** Discover, Obsidian.
-+ **Text:** ArchNote, Audiofy, Legere, Serpentine, Taccuino.
++ **Office:** Legere, Nota.
++ **Online:** Hematite, Obsidian.
 + **Videos:** Hydrae, Lorevania, Vetra, Videre, WonderBox.
-+ **Xtras:** Includes Guides (web app manuals), Valhalla, and Yggdrasil.
++ **Xtras:** Guides.
 
 ### Nexus: Portable Applications
 🛠️ **Status:** In development. Coming soon!
