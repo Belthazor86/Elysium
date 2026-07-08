@@ -54,7 +54,10 @@ Elysium comes pre-loaded with a variety of apps. You can add more by placing the
 🛠️ **Status:** In development. Coming soon!
 
 > 🚀 **Constantly Evolving:** Always working to improve the Elysium web platform. Because of this ongoing evolution, some features like guides are currently unavailable while they are being refined.
+> 
 > 📝 **Usage:** Elysium is for personal use only.
+>
+> 🆘 **Support:** If you have any issues with Elysium please reach out politely in GitHub Discussions
 
 
 
