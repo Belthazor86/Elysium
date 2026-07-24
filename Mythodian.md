@@ -1,6 +1,6 @@
 # **Mythodian (Basilisk + Elysium)**
 
-## **Elysium**
+## **Elysium: Web Platform**
 
 Elysium is a plug-and-play web app platform that allows users to integrate, organize, and interact with your favorite web apps and content from a single unified dashboard.
 
@@ -10,7 +10,7 @@ Elysium is a plug-and-play web app platform that allows users to integrate, orga
 * **Flexible Storage:** Load content directly from local storage, external drives, or cloud services like Google Drive and Box.
 * **Fully Customizable:** Easily add your own web apps and create tailored categories.
 
-## **Basilisk**
+## **Basilisk: Portable Gaming Browser**
 
 Basilisk is a portable gaming browser specifically optimized for the Elysium web platform.
 
