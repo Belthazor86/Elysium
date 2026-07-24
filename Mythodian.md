@@ -1,28 +1,27 @@
 # **Mythodian (Basilisk + Elysium)**
 
-**Elysium**
+## **Elysium**
 
-Elysium is a plug-and-play web app platform that allows users to integrate and interact with their favorite web applications in a single unified dashboard.
+Elysium is a plug-and-play web app platform that allows users to integrate, organize, and interact with your favorite web apps and content from a single unified dashboard.
 
-**Key Features**
+### **Key Features**
 
-+ **Centralized Hub:** Interact with books, comics, music, podcasts, games, and PDFs in one place
-+ **Flexible Storage:** Access content via cloud services (Box, Google Drive), or internal/external storage.
-+ **Customizable:** Easily add your own categories and web apps.
-+ **Plug & Play:** Users can add their own web apps.
+* **Centralized Hub:** Access books, comics, music, podcasts, games, and PDFs in one place.
+* **Flexible Storage:** Load content directly from local storage, external drives, or cloud services like Google Drive and Box.
+* **Fully Customizable:** Easily add your own web apps and create tailored categories.
 
-**Basilisk**
+## **Basilisk**
 
-Basilisk is a portable gaming browser that optimized for the Elysium web platform. 
+Basilisk is a portable gaming browser specifically optimized for the Elysium web platform.
 
-**Key Features**
+### **Key Features**
 
-+ **Gaming:** Optimized for playing flash and HTML 5 games
-+ **Portable** Does not need to be installed and can be stored on a USB device
-+ **Client/Server** Has built with client and server fuctionaity
+* **Gaming Optimized:** Fine-tuned for smooth playback of Flash and HTML5 games.
+* **100% Portable:** Runs directly without installation—perfect for USB drives.
+* **Client/Server Architecture:** Built with client and server functionality.
 
 
-[Home](https://github.com/Belthazor86/Valinor)||[Download](https://github.com/Belthazor86/Valinor/releases/tag/Website)
+[Home](https://github.com/Belthazor86/Valinor) || [Download](https://github.com/Belthazor86/Valinor/releases/tag/Website)
 
 
 > 🚀 **Continuous improvement :** An ongoing effort to enhance Mythodian.
