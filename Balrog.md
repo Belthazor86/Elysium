@@ -37,11 +37,11 @@ graph TD
 
 
 
-> 🚀 **Continuous improvement :** An ongoing effort to enhance the Elysium web platform through updates.
+> 🚀 **Continuous improvement :** An ongoing effort to enhance Balrog.
 > 
-> 📝 **Usage:** Elysium is for personal use only.
+> 📝 **Usage:** Balrog is for personal use only.
 >
-> 🆘 **Support:** If you have any issues with Elysium please reach out politely in GitHub Discussions
+> 🆘 **Support:** If you have any issues with Balrog please reach out politely in GitHub Discussions
 
 
 
