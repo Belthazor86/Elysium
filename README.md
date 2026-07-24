@@ -2,7 +2,7 @@
 
 Valinor is a centralized hub for discovering and managing portable gaming applications and web tools. 
 
-+ **Mythodian:** An integration of Elysium a plug-and-play platform that lets users integrate and interact with web apps in a single, unified dashboard and B asilisk a portable gaming browser optimized for Flash and HTML5 games. [Guide](https://github.com/Belthazor86/Valinor/blob/main/Elysium.md)||[Download](https://github.com/Belthazor86/Valinor/releases/tag/Website)
++ **Mythodian:** An integration of Elysium a plug-and-play platform that lets users integrate and interact with web apps in a single, unified dashboard and Basilisk a portable gaming browser optimized for Flash and HTML5 games. [Guide](https://github.com/Belthazor86/Valinor/blob/main/Mythodian.md)||[Download](https://github.com/Belthazor86/Valinor/releases/tag/Website)
 + **Symbiote:** A portable game launcher for organizing non-Steam games, emulators, and utility tools, complete with custom cover art support for every title.
 + **Balrog:** A lightweight, portable Flash and HTML player designed to easily scan, load, and play your favorite games locally.
 
