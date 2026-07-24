@@ -35,7 +35,7 @@ graph TD
 
 
 
-[Home](https://github.com/Belthazor86/Valinor) || [Download]()
+[Home](https://github.com/Belthazor86/Valinor) || [Download](https://github.com/Belthazor86/Valinor/releases/tag/Gaming)
 
 > 🚀 **Continuous improvement :** An ongoing effort to enhance the Symbiote.
 > 
