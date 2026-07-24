@@ -1,63 +1,47 @@
-# **Elysium**
+# **Symbiote: Portable Gaming Launcher**
 
-Elysium is a plug-and-play web app platform built with HTML and PHP. It allows users to create a personalized web-based client using local servers like XAMPP, WAMP, or Laragon to integrate and interact with their favorite web applications in a single unified dashboard.
+Symbiote is a portable game launcher where gamers can organize their non-Steam games, emulators, and gaming tools. 
 
 **Key Features**
 
-+ **Centralized Hub:** Interact with books, comics, music, podcasts, games, and PDFs in one place
-+ **Flexible Storage:** Access content via local web servers, cloud services (Box, Google Drive), or internal/external storage.
-+ **Customizable:** Easily add your own categories and web apps.
-+ **Plug & Play:** Simple setup with no complex database configurations required.
++ 100% Portable: Runs directly without installation perfect for USB drives.
++ Custom Art: Gamers can add their own customer posters for every item
++ Gamepad Support: Navigate the launcher using the Keyboard or Gamepad
++ Customize: Change the theme of the launcher in the setting folder.
 
-**Folder Structure**
+**Instructions**
 
-The platform is organized into the following directory structure:
+1. Add games, emulators and gaming tools to games folder
+2. Add cover art to posters folder
+3. Ensure that the game folder and cover art have the same title
+4. Change background an font in settings folder (optional)
 
-+ **CSS:** Contains stylesheets for colors, layout, and visual design.
-+ **Fonts:** Main typography files for the dashboard.
-+ **Images:** Interface wallpapers.
-+ **Logos:** Main Elysium branding assets.
-+ **Messages:** Text snippets for Elysium and Yggdrasil pages.
-+ **Search:** The core directory. This is where all web apps live, organized by category.
-+ **Config:** Stores the absolute path to the project's root folder
-+ **Security:** Protects against path traversal, XSS, and malicious file access
-+ **Index.php:** The main entry point to launch the dashboard.
 
-**Installation & Setup**
+```mermaid
+graph TD
+    Symbiote["Symbiote/"] --> folder1["Games/"]
+    Symbiote --> folder2["Posters/"]
 
-Follow these steps to get your local instance running:
+    folder1 --> file1["JoytoKey/"]
+    folder1 --> file2["RPCS3/"]
+    folder1 --> file3["X-Men Origins: Wolverine/"]
 
-1. **Download:** Download the Elysium Project files.
-2. **Setup a local server:** Download and install XAMPP, WAMP, or Laragon. (For USB use, grab the portable version.).
-3. **Deploy:** Extract the project and place the folder into your server's htdocs (or equivalent) directory
-4. **Launch:** Open your web browser and navigate to the index page (e.g., localhost/Elysium/index.php).
+    folder2 --> file4["JoytoKey.jpg"]
+    folder2 --> file5["RPCS3.jpg"]
+    folder2 --> file6["X-Men Origins: Wolverine.jpg"]
 
-**Included Web Apps**
+```
 
-Elysium comes pre-loaded with a variety of apps. You can add more by placing them in the appropriate category within the /Search folder.
 
-+ **Apps:** AppBarn, Webology, Yggdrasil
-+ **Audio:** Aurora, Soundify, Storyboard, Themata, Wavora.
-+ **Gaming:** Flashbot, Flashboy, Web U.
-+ **Books & Comics:** Fumetti, Graphique, Novella, Scribe.
-+ **Gallary:** Boardify, Figura, Gallerium, Imagen.
-+ **Music:** Andromeda, Moodify, Musica, Pandora, Sahara, Serenade.
-+ **Office:** Legere, Nota.
-+ **Online:** Hematite, Obsidian.
-+ **Videos:** Hydrae, Lorevania, Vetra, Videre, WonderBox.
-+ **Xtras:** Guides.
 
-### Nexus: Portable Applications
-🛠️ **Status:** In development. Coming soon!
 
-### Homunculus: Automated Scripts
-🛠️ **Status:** In development. Coming soon!
+[Home](https://github.com/Belthazor86/Valinor) || [Download]()
 
-> 🚀 **Continuous improvement :** An ongoing effort to enhance the Elysium web platform through updates.
+> 🚀 **Continuous improvement :** An ongoing effort to enhance the Symbiote.
 > 
-> 📝 **Usage:** Elysium is for personal use only.
+> 📝 **Usage:** Symbiote is for personal use only.
 >
-> 🆘 **Support:** If you have any issues with Elysium please reach out politely in GitHub Discussions
+> 🆘 **Support:** If you have any issues with Symbiote please reach out politely in GitHub Discussions
 
 
 
