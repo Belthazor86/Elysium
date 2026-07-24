@@ -17,7 +17,7 @@ Basilisk is a portable gaming browser specifically optimized for the Elysium web
 ### **Key Features**
 
 * **Gaming Optimized:** Fine-tuned for smooth playback of Flash and HTML5 games.
-* **100% Portable:** Runs directly without installation—perfect for USB drives.
+* **100% Portable:** Runs directly without installation perfect for USB drives.
 * **Client/Server Architecture:** Built with client and server functionality.
 
 
